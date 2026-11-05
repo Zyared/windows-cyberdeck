@@ -123,7 +123,8 @@ $taskbar = @(
   @('SystemTray.AdaptiveTextBlock#LanguageInnerTextBlock > TextBlock#InnerTextBlock', @("Foreground=$Y", "FontFamily=$FONT")),
   # Tray glyphs. Only these two targets: a Foreground on SystemTray.ChevronIconView or on a wider TextBlock rule
   # crash-looped Explorer in Windows.UI.Xaml.dll (c000027b), so nothing broader may go here.
-  $(if (-not $NoTray) { , @('SystemTray.TextIconContent > Grid > SystemTray.AdaptiveTextBlock#Base > TextBlock', @("Foreground=$Y")) }),
+  $(if (-not $NoTray) { , @('SystemTray.TextIconContent > Grid#ContainerGrid > SystemTray.AdaptiveTextBlock#Base > TextBlock#InnerTextBlock', @("Foreground=$Y")) }),
+  $(if (-not $NoTray) { , @('SystemTray.BatteryIconContent > Grid#ContainerGrid > StackPanel > Grid > TextBlock[1]', @("Foreground=$Y")) }),
   $(if (-not $NoTray) { , @('SystemTray.BatteryIconContent > Grid#ContainerGrid > StackPanel > TextBlock', @("Foreground=$Y")) }),
   @('SystemTray.OmniButton#ControlCenterButton > Grid > Border#BackgroundBorder', @('CornerRadius=0')),
   @('SystemTray.NotifyIconView@CommonStates > Grid#ContainerGrid > Border#BackgroundBorder', @('CornerRadius=0', "Background@PointerOver=$Glow")),
