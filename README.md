@@ -7,16 +7,16 @@
 | Часть | Что делает | Чем |
 |---|---|---|
 | Обои и экран блокировки | Ночной город, надпись `CYBER//DECK` | `make-art.ps1` |
-| Живые обои | Мигающие окна и неон, летающие огни, глитч надписи, световой импульс | Lively Wallpaper |
+| Живые обои | Мигающие окна и неон, летающие огни, глитч надписи, световой импульс | Lively Wallpaper или Wallpaper Engine |
 | HUD | Часы, CPU, память, диск, сеть | Rainmeter |
 | Иконки | Папки, диск, этот компьютер, сеть, библиотеки, корзина | `make-icons.ps1`, `apply-icons.ps1` |
 | Цвета и курсоры | Тёмный режим, жёлтый акцент, свои курсоры | `apply.ps1` |
-| «Пуск», Проводник, панель задач, контекстные меню | Чёрное стекло, неоновые линии, заголовки в стиле HUD, значок `//`, жёлтые полосы дисков | Windhawk и четыре мода |
+| «Пуск», Проводник, панель задач, контекстные меню, скрытые значки трея, быстрые настройки с Wi-Fi, уведомления, календарь, «Параметры» | Чёрное стекло, неоновые линии, заголовки в стиле HUD, значок `//`, жёлтые полосы дисков | Windhawk и шесть модов |
 | Windows Terminal | Цветовая схема `CyberDeck` | `apply.ps1` |
 
 ## Установка
 
-Сторонние программы ставятся отдельно:
+Сторонние программы ставятся отдельно. Lively не нужен, если у тебя уже есть Wallpaper Engine:
 
 ```bash
 winget install --id rocksdanister.LivelyWallpaper --exact
@@ -30,7 +30,7 @@ winget install --id Rainmeter.Rainmeter --exact
 winget install --id RamenSoftware.Windhawk --exact
 ```
 
-В окне Windhawk через поиск поставь моды: **Windows 11 Start Menu Styler**, **Windows 11 File Explorer Styler**, **Windows 11 Taskbar Styler**, **Translucent Windows**. Настройки модов не меняй, их заполнит скрипт. Translucent Windows он ограничивает только Проводником.
+В окне Windhawk через поиск поставь моды: **Windows 11 Start Menu Styler**, **Windows 11 File Explorer Styler**, **Windows 11 Taskbar Styler**, **Windows 11 Notification Center Styler**, **Windows 11 Settings Styler**, **Translucent Windows**. Настройки модов не меняй, их заполнит скрипт. Translucent Windows он ограничивает только Проводником.
 
 Затем запусти обычный PowerShell из папки проекта. Скрипты нельзя запускать из упакованных приложений: их записи в `AppData` не видит остальная Windows.
 
@@ -42,17 +42,22 @@ powershell -ExecutionPolicy Bypass -File apply.ps1
 powershell -ExecutionPolicy Bypass -File apply-live.ps1
 ```
 
+С Wallpaper Engine вместо второй команды запусти эту. Обои появятся в его списке как проект `CYBER//DECK`:
+
+```bash
+powershell -ExecutionPolicy Bypass -File apply-live.ps1 -Wallpaper WallpaperEngine
+```
+
 Файлы копируются в `%USERPROFILE%\CyberDeck`. Windows запросит права администратора для настроек Windhawk и значка папок. Проводник перезапускается: окна папок закроются, программы продолжат работать.
 
 ## Откат
 
-`%USERPROFILE%\CyberDeck\Restore-Windows-Look.bat` возвращает прежние обои, цвета, курсоры, значки, настройки терминала и экран блокировки, выключает моды и автозапуск Lively и Rainmeter. Сами программы остаются, их можно удалить в «Параметрах».
+`%USERPROFILE%\CyberDeck\Restore-Windows-Look.bat` возвращает прежние обои, цвета, курсоры, значки, настройки терминала и экран блокировки, выключает моды и автозапуск Lively и Rainmeter. Если использовался Wallpaper Engine, возвращаются и его прежние обои. Сами программы остаются, их можно удалить в «Параметрах».
 
 Прежние настройки сохраняются в `%USERPROFILE%\CyberDeck\backup` при первом запуске.
 
 ## Что нельзя изменить
 
-- **«Параметры»:** только тёмный режим и акцент, подходящего мода нет.
 - **Значки сторонних программ в трее:** их рисуют сами программы. Wi-Fi, звук и стрелка красятся в жёлтый.
 
 Не добавляй цвет к `SystemTray.ChevronIconView` и общим правилам `TextBlock` в трее: такие правила вызвали циклические падения Проводника в `Windows.UI.Xaml.dll`.

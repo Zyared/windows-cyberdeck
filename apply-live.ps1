@@ -1,4 +1,5 @@
 # Turns on the animated layer: the live wallpaper in Lively and the HUD in Rainmeter. Run after apply.ps1.
+param([ValidateSet('Lively', 'WallpaperEngine')][string]$Wallpaper = 'Lively')
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'common.ps1')
 $root = Join-Path $env:USERPROFILE 'CyberDeck'
@@ -7,21 +8,25 @@ $root = Join-Path $env:USERPROFILE 'CyberDeck'
 Invoke-WindhawkSettings ''
 $lively = 'C:\Program Files\Lively Wallpaper\Lively.exe'
 $rm = 'C:\Program Files\Rainmeter\Rainmeter.exe'
-foreach ($p in $lively, $rm) { if (-not (Test-Path $p)) { throw "Not installed: $p" } }
-
-# --- Lively ---
-$lib = Join-Path $env:LOCALAPPDATA 'Lively Wallpaper\Library\wallpapers\cyberdeck'
-New-Item -ItemType Directory -Force -Path $lib | Out-Null
-Copy-Item (Join-Path $root 'live\*') $lib -Recurse -Force   # Lively ignores a folder outside its library, without any error
+foreach ($p in $(if ($Wallpaper -eq 'Lively') { $lively }), $rm) { if ($p -and -not (Test-Path $p)) { throw "Not installed: $p" } }
 $run = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
-Set-ItemProperty $run 'Lively' "`"$lively`""
-if (-not (Get-Process Lively -ErrorAction SilentlyContinue)) { Start-Process $lively; Start-Sleep 8 }
-$p = Start-Process $lively -ArgumentList @('setwp', '--file', "`"$lib`"") -PassThru -WindowStyle Hidden
-$p.WaitForExit(15000) | Out-Null
-Start-Sleep 5
-$layout = Join-Path $env:LOCALAPPDATA 'Lively Wallpaper\WallpaperLayout.json'
-if ((Get-Content $layout -Raw) -notmatch 'cyberdeck') { throw 'Lively did not accept the wallpaper.' }
-Write-Host 'Live wallpaper on.'
+
+if ($Wallpaper -eq 'WallpaperEngine') {
+  & (Join-Path $root 'apply-wallpaper-engine.ps1')
+} else {
+  # --- Lively ---
+  $lib = Join-Path $env:LOCALAPPDATA 'Lively Wallpaper\Library\wallpapers\cyberdeck'
+  New-Item -ItemType Directory -Force -Path $lib | Out-Null
+  Copy-Item (Join-Path $root 'live\*') $lib -Recurse -Force   # Lively ignores a folder outside its library, without any error
+  Set-ItemProperty $run 'Lively' "`"$lively`""
+  if (-not (Get-Process Lively -ErrorAction SilentlyContinue)) { Start-Process $lively; Start-Sleep 8 }
+  $p = Start-Process $lively -ArgumentList @('setwp', '--file', "`"$lib`"") -PassThru -WindowStyle Hidden
+  $p.WaitForExit(15000) | Out-Null
+  Start-Sleep 5
+  $layout = Join-Path $env:LOCALAPPDATA 'Lively Wallpaper\WallpaperLayout.json'
+  if ((Get-Content $layout -Raw) -notmatch 'cyberdeck') { throw 'Lively did not accept the wallpaper.' }
+  Write-Host 'Live wallpaper on.'
+}
 
 # --- Rainmeter: the skin goes where Rainmeter looks for it, the old sample skins stay off ---
 $skin = Join-Path $env:USERPROFILE 'Documents\Rainmeter\Skins\CyberDeck\HUD'

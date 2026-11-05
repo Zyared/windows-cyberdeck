@@ -3,7 +3,7 @@
 param([switch]$Off, [switch]$On, [switch]$WithTranslucent, [switch]$NoTray)
 $ErrorActionPreference = 'Stop'
 $root = 'HKLM:\SOFTWARE\Windhawk\Engine\Mods'
-$ids = 'windows-11-start-menu-styler', 'windows-11-file-explorer-styler', 'windows-11-taskbar-styler', 'translucent-windows', 'local@translucent-windows-fork'
+$ids = 'windows-11-start-menu-styler', 'windows-11-file-explorer-styler', 'windows-11-taskbar-styler', 'translucent-windows', 'local@translucent-windows-fork', 'windows-11-notification-center-styler', 'windows-11-settings-styler'
 $home2 = Join-Path $env:USERPROFILE 'CyberDeck'
 $icons = Join-Path $home2 'icons'
 $shellIcons = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Icons'
@@ -11,7 +11,7 @@ $shellIcons = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Ic
 function Stamp($id) { Set-ItemProperty "$root\$id" SettingsChangeTime ([int][DateTimeOffset]::UtcNow.ToUnixTimeSeconds()) -Type DWord }
 
 if ($Off -or $On) {
-  foreach ($id in $ids[0..2]) { if (Test-Path "$root\$id") { Set-ItemProperty "$root\$id" Disabled ([int][bool]$Off) -Type DWord; Stamp $id } }
+  foreach ($id in $ids[0, 1, 2, 5, 6]) { if (Test-Path "$root\$id") { Set-ItemProperty "$root\$id" Disabled ([int][bool]$Off) -Type DWord; Stamp $id } }
   if ($Off) { foreach ($id in $ids[3..4]) { if (Test-Path "$root\$id") { Set-ItemProperty "$root\$id" Disabled 1 -Type DWord; Stamp $id } } }
   if ($Off -and (Test-Path $shellIcons)) { Remove-Item $shellIcons -Recurse -Force }
   Write-Host "Mods disabled: $([bool]$Off)"
@@ -128,6 +128,8 @@ $taskbar = @(
   $(if (-not $NoTray) { , @('SystemTray.BatteryIconContent > Grid#ContainerGrid > StackPanel > TextBlock', @("Foreground=$Y")) }),
   @('SystemTray.OmniButton#ControlCenterButton > Grid > Border#BackgroundBorder', @('CornerRadius=0')),
   @('SystemTray.NotifyIconView@CommonStates > Grid#ContainerGrid > Border#BackgroundBorder', @('CornerRadius=0', "Background@PointerOver=$Glow")),
+  # hidden tray icons flyout
+  @('Border#OverflowFlyoutBackgroundBorder', @("Background:=$Glass", "BorderBrush:=$NeonD", 'BorderThickness=1', 'CornerRadius=0')),
   # thumbnails and right-click menus
   @('Taskbar.TaskbarBackground#HoverFlyoutBackgroundControl > Grid > Rectangle#BackgroundFill', @("Fill:=$Glass")),
   @('Taskbar.TaskbarBackground#HoverFlyoutBackgroundControl > Grid > Rectangle#BackgroundStroke', @("Fill:=$NeonD")),
@@ -135,6 +137,56 @@ $taskbar = @(
 )
 $taskbar = @($taskbar | Where-Object { $_ })   # the $NoTray switch leaves empty slots
 $taskbarVars = @("MenuFlyoutItemBackgroundPointerOver=$Glow", "MenuFlyoutItemForegroundPointerOver=$Y")
+
+# Quick settings with their inner pages (Wi-Fi, Bluetooth, sound), notifications and the calendar.
+$panel = @("Background:=$Glass", "BorderBrush:=$NeonD", 'BorderThickness=1', 'CornerRadius=0')
+$see = @('Background:=Transparent')
+$notify = @(
+  # the outer panels carry the glass, so everything inside has to let it through
+  @('Grid#ControlCenterRegion', $panel),
+  @('Grid#NotificationCenterGrid', $panel),
+  @('Grid#CalendarCenterGrid', $panel),
+  @('Grid#MediaTransportControlsRegion', $panel),
+  @('Border#ToastBackgroundBorder, Border#ToastBackgroundBorder2', $panel),
+  @('MenuFlyoutPresenter > Border', $panel),
+  @('Grid#L1Grid > Border', @('Background:=Transparent', 'BorderThickness=0')),
+  @('ContentPresenter#PageContent', $see),
+  @('ContentPresenter#PageContent > Grid > Border', $see),
+  @('QuickActions.ControlCenter.AccessibleWindow#PageWindow > ContentPresenter > Grid#FullScreenPageRoot', $see),
+  @('QuickActions.ControlCenter.AccessibleWindow#PageWindow > ContentPresenter > Grid#FullScreenPageRoot > ContentPresenter#PageHeader', $see),
+  @('ScrollViewer#ListContent', $see),
+  @('Grid#MediaTransportControlsRoot', $see),
+  @('ActionCenter.FlexibleToastView#FlexibleNormalToastView', $see),
+  @('ScrollViewer#CalendarControlScrollViewer', @('Background:=Transparent', 'BorderThickness=0')),
+  @('Border#CalendarHeaderMinimizedOverlay', @('Background:=Transparent', 'BorderThickness=0')),
+  @('ActionCenter.FocusSessionControl#FocusSessionControl > Grid#FocusGrid', @('Background:=Transparent', 'BorderThickness=0')),
+  @('Grid#FooterGrid', @('BorderThickness=0')),
+  @('ActionCenter.FlexibleItemView', @('CornerRadius=0'))
+)
+
+# The Settings app: black page and one neutral colour for every card, so nothing clashes. The home page is React Native, so it has its own card target.
+$Card = '#101013'
+$cardStyle = @("Background=$Card", 'CornerRadius=0')
+$settingsApp = @(
+  @('Windows.UI.Xaml.Controls.Grid#RootPageGrid', @("Background=$K")),
+  @('SystemSettings.View.RootPage', @('Background=Transparent')),
+  @('Microsoft.UI.Xaml.Controls.NavigationView#PermanentNavigationView', @("Background=$K")),
+  @('SplitView#RootSplitView > Grid > Grid#PaneRoot', @('Background=Transparent')),
+  @('SplitView#RootSplitView > Grid > Grid#ContentRoot > Border > Grid#ContentGrid', @("Background=$K", "BorderBrush=$Glow", 'BorderThickness=1,1,0,0', 'CornerRadius=0')),
+  @('SystemSettings.View.AlignableContentControl#PermanentNavViewHeaderAlignControl > ContentPresenter', @('Background=Transparent')),
+  @('SystemSettings.View.ButtonEntityItem > Button#ContainerButton > ContentPresenter#ContentPresenter', $cardStyle),
+  @('SystemSettings.View.ExpanderToggleButton#ContainerButton > ContentPresenter#ContentPresenter', $cardStyle),
+  @('SystemSettings.View.EntityItem', @("Background=$Card")),
+  @('StackPanel#BackgroundStackPanel', @("Background=$Card")),
+  @('ContentControl#GridViewItemContentControl > ContentPresenter > Grid', $cardStyle),
+  @('Microsoft.ReactNative.ReactRootView > Microsoft.ReactNative.ViewPanel > Microsoft.ReactNative.ViewPanel > Microsoft.ReactNative.ViewPanel > Microsoft.ReactNative.ViewPanel > Border', $cardStyle),
+  @('Windows.UI.Xaml.Controls.Primitives.ListViewItemPresenter > Border', @('Background=Transparent', 'CornerRadius=0')),
+  @('Windows.UI.Xaml.Controls.StackPanel#SettingsCommandSearchBoxBackground', @("Background=$Card")),
+  @('Windows.UI.Xaml.Controls.TextBox#CommandSearchTextBox', @("Background=$Card")),
+  @('ContentPresenter#TitleContent > TextBlock', @("Foreground=$T")),
+  @('ContentPresenter#SubtitleContent > TextBlock', @("Foreground=$D")),
+  @('Microsoft.ReactNative.ViewPanel > TextBlock', @("Foreground=$T"))
+)
 
 function Write-Mod($id, $styles, $vars) {
   $key = "$root\$id\Settings"
@@ -187,6 +239,8 @@ if ($translucent -and $WithTranslucent) {
   Write-Host "$translucent : explorer only, tint C808080A"
 }
 if (Test-Path "$root\$($ids[2])") { Write-Mod $ids[2] $taskbar $taskbarVars }
+if (Test-Path "$root\$($ids[5])") { Write-Mod $ids[5] $notify $startVars }
+if (Test-Path "$root\$($ids[6])") { Write-Mod $ids[6] $settingsApp @() }
 
 # Folder, open folder and fixed drive icons are read from HKLM. The key did not exist before, so -Off simply removes it.
 if (-not (Test-Path $shellIcons)) { New-Item $shellIcons -Force | Out-Null }

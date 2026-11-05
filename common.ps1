@@ -69,8 +69,9 @@ function Refresh-Appearance {
   Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
   Start-Sleep 2
   # The icon cache would keep showing old icons; Windows rebuilds it on its own.
-  Remove-Item (Join-Path $env:LOCALAPPDATA 'Microsoft\Windows\Explorer\iconcache_*.db') -Force -ErrorAction SilentlyContinue
-  Remove-Item (Join-Path $env:LOCALAPPDATA 'IconCache.db') -Force -ErrorAction SilentlyContinue
+  # File by file: a cache file can vanish mid-delete, and that error must not stop Explorer from coming back.
+  Get-ChildItem (Join-Path $env:LOCALAPPDATA 'Microsoft\Windows\Explorer\iconcache_*.db') -Force -ErrorAction SilentlyContinue | ForEach-Object { try { Remove-Item -LiteralPath $_.FullName -Force -ErrorAction Stop } catch {} }
+  try { Remove-Item (Join-Path $env:LOCALAPPDATA 'IconCache.db') -Force -ErrorAction Stop } catch {}
   Start-Sleep 1
   if (-not (Get-Process explorer -ErrorAction SilentlyContinue)) { Start-Process explorer.exe }
 }

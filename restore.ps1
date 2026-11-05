@@ -23,6 +23,7 @@ if (Get-Process Rainmeter -ErrorAction SilentlyContinue) {
 }
 foreach ($n in 'Lively', 'Rainmeter') { Remove-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' -Name $n -ErrorAction SilentlyContinue }
 Remove-Item (Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\Startup\Rainmeter.lnk') -ErrorAction SilentlyContinue
+if (Test-Path (Join-Path $BackupDir 'wallpaper-engine-config.json')) { & (Join-Path $PSScriptRoot 'apply-wallpaper-engine.ps1') -Undo }
 Invoke-WindhawkSettings '-Off'
 & (Join-Path $PSScriptRoot 'apply-icons.ps1') -Undo
 

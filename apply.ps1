@@ -29,7 +29,7 @@ foreach ($b in $RegBackups) {
 }
 
 # 2. Keep everything needed later outside the session folder.
-foreach ($f in 'common.ps1', 'restore.ps1', 'apply.ps1', 'apply-live.ps1', 'apply-icons.ps1', 'make-art.ps1', 'make-icons.ps1', 'windhawk-settings.ps1') { if ($src -ne $Home2) { Copy-Item (Join-Path $src $f) $Home2 -Force } }
+foreach ($f in 'common.ps1', 'restore.ps1', 'apply.ps1', 'apply-live.ps1', 'apply-wallpaper-engine.ps1', 'apply-icons.ps1', 'make-art.ps1', 'make-icons.ps1', 'windhawk-settings.ps1', 'live', 'rainmeter') { if ($src -ne $Home2) { Copy-Item (Join-Path $src $f) $Home2 -Recurse -Force } }
 $bat = '@echo off' + "`r`n" + 'powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0restore.ps1"' + "`r`n" + 'pause' + "`r`n"
 [IO.File]::WriteAllText((Join-Path $Home2 'Restore-Windows-Look.bat'), $bat)
 
