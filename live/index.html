@@ -1,0 +1,156 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>CYBER//DECK</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #08080a; overflow: hidden; }
+  #stage { position: absolute; left: 0; top: 0; transform-origin: 0 0; background: url(base.png) 0 0 / 100% 100% no-repeat; overflow: hidden; }
+  #lights { position: absolute; left: 0; top: 0; }
+  .neon { position: absolute; animation: neon 5s steps(1) infinite; }
+  @keyframes neon { 0%, 71%, 79%, 100% { opacity: 1; } 72% { opacity: .15; } 74% { opacity: .9; } 76% { opacity: .1; } }
+
+  /* a pulse of light running along the bottom edge */
+  #tape { position: absolute; left: 0; overflow: hidden; width: 100%; background: rgba(252, 238, 10, .12); }
+  #tape i { position: absolute; top: 0; bottom: 0; left: 0; width: 22%; will-change: transform;
+    background: linear-gradient(90deg, transparent, #fcee0a, #ff003c, transparent);
+    animation: tape 7s linear infinite; }
+  @keyframes tape { from { transform: translateX(-100%); } to { transform: translateX(460%); } }
+
+  /* light band sliding down the screen */
+  #sweep { position: absolute; left: 0; right: 0; top: 0; height: 20%; will-change: transform;
+    background: linear-gradient(180deg, transparent, rgba(252, 238, 10, .05), transparent);
+    animation: sweep 10s linear infinite; }
+  @keyframes sweep { from { transform: translateY(-100%); } to { transform: translateY(600%); } }
+
+  /* sheen crossing the yellow blade */
+  #blade { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden;
+    clip-path: polygon(88.5% 0, 100% 0, 100% 40%, 74% 40%); }
+  #blade i { position: absolute; top: 0; bottom: 0; left: 0; width: 10%; will-change: transform;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .55), transparent);
+    animation: blade 6s ease-in-out infinite; }
+  @keyframes blade { 0%, 70% { transform: translateX(600%) skewX(-30deg); } 100% { transform: translateX(1050%) skewX(-30deg); } }
+
+  /* signal tear: slices of the picture jump sideways for a moment */
+  .slice { position: absolute; left: 0; top: 0; background: url(base.png) 0 0 / 100% 100% no-repeat; display: none; }
+  .tint { position: absolute; display: none; mix-blend-mode: screen; }
+
+  .car { position: absolute; left: 0; width: 26px; height: 2px; will-change: transform; border-radius: 2px; }
+
+  #code { position: absolute; font: 400 20px "Bahnschrift SemiBold Condensed", Bahnschrift, sans-serif; letter-spacing: .12em; color: #ff003c; }
+  #cursor { position: absolute; width: 10px; height: 20px; background: #00f0ff; animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="lights"></canvas>
+  <div id="blade"><i></i></div>
+  <div id="tape"><i></i></div>
+  <div id="sweep"></div>
+  <div id="code"></div>
+  <div id="cursor"></div>
+</div>
+<script src="data.js"></script>
+<script>
+(() => {
+  const D = window.CD, stage = document.getElementById('stage');
+  const fit = () => {
+    stage.style.width = D.w + 'px'; stage.style.height = D.h + 'px';
+    stage.style.transform = `scale(${innerWidth / D.w}, ${innerHeight / D.h})`;
+  };
+  fit(); addEventListener('resize', fit);
+
+  const tape = document.getElementById('tape');
+  tape.style.top = D.tapeY + 'px'; tape.style.height = D.tapeH + 'px';
+
+  // Neon strips from the picture, each flickering on its own schedule.
+  D.neon.forEach(([x, y, w, h, c]) => {
+    const n = document.createElement('div');
+    n.className = 'neon';
+    n.style.cssText = `left:${x}px;top:${y}px;width:${w}px;height:${h}px;background:${c};box-shadow:0 0 10px ${c};animation-delay:-${(Math.random() * 5).toFixed(2)}s`;
+    stage.appendChild(n);
+  });
+
+  // City windows: a few go dark and a few flare. Five times a second is plenty and keeps the load low.
+  const cv = document.getElementById('lights');
+  cv.width = D.w; cv.height = D.h;
+  const ctx = cv.getContext('2d');
+  const off = new Set(), bright = new Set();
+  const pick = () => D.windows[Math.random() * D.windows.length | 0];
+  const lights = () => {
+    if (document.hidden || !D.windows.length) return;
+    for (let i = 0; i < 2; i++) { off.add(pick()); bright.add(pick()); }
+    for (const s of [off, bright]) while (s.size > D.windows.length * .1) s.delete(s.values().next().value);
+    ctx.clearRect(0, 0, D.w, D.h);
+    ctx.shadowBlur = 0; ctx.fillStyle = '#0b0b0d';
+    off.forEach(([x, y, w, h]) => ctx.fillRect(x, y, w, h));
+    ctx.shadowBlur = 8;
+    bright.forEach(([x, y, w, h, c]) => { ctx.shadowColor = c; ctx.fillStyle = c; ctx.fillRect(x, y, w, h); });
+  };
+  setInterval(lights, 200);
+
+  // Flying traffic above the skyline.
+  const carColors = ['#ff003c', '#fcee0a', '#00f0ff'];
+  for (let i = 0; i < 5; i++) {
+    const car = document.createElement('div');
+    car.className = 'car';
+    const c = carColors[i % 3], y = D.h * (.56 + Math.random() * .14), ltr = i % 2 === 0;
+    car.style.cssText = `top:${y}px;background:linear-gradient(${ltr ? '90deg' : '270deg'},transparent,${c});box-shadow:0 0 6px ${c}`;
+    stage.appendChild(car);
+    car.animate(
+      [{ transform: `translateX(${ltr ? D.w * .25 : D.w}px)` }, { transform: `translateX(${ltr ? D.w : D.w * .25}px)` }],
+      { duration: 14000 + Math.random() * 16000, iterations: Infinity, delay: -Math.random() * 20000 }
+    );
+  }
+
+  // Readout next to the status line.
+  const code = document.getElementById('code'), cursor = document.getElementById('cursor');
+  const left = D.tx + 480 * D.s;
+  code.style.left = left + 'px'; code.style.top = (D.hudY + 2 * D.s) + 'px';
+  cursor.style.left = (left + 130 * D.s) + 'px'; cursor.style.top = (D.hudY + 6 * D.s) + 'px';
+  const hex = () => '0x' + (Math.random() * 0xFFFFFF | 0).toString(16).toUpperCase().padStart(6, '0');
+  setInterval(() => { if (!document.hidden) code.textContent = hex(); }, 700);
+  code.textContent = hex();
+
+  // Signal tear over the wordmark, every 3 to 9 seconds.
+  const slices = Array.from({ length: 5 }, () => {
+    const s = document.createElement('div');
+    s.className = 'slice'; s.style.width = D.w + 'px'; s.style.height = D.h + 'px';
+    stage.appendChild(s);
+    return s;
+  });
+  const tints = ['rgba(255,0,60,.35)', 'rgba(0,240,255,.3)'].map(c => {
+    const t = document.createElement('div');
+    t.className = 'tint'; t.style.background = c;
+    stage.appendChild(t);
+    return t;
+  });
+  const region = { x: D.tx - 40, w: 820 * D.s, y: D.ty, h: D.fs * 1.05 };
+  const frame = () => {
+    slices.forEach(s => {
+      const top = region.y + Math.random() * region.h, h = 4 + Math.random() * 20 * D.s;
+      const shift = (Math.random() - .5) * 70 * D.s;
+      s.style.clipPath = `inset(${top}px ${D.w - region.x - region.w}px ${D.h - top - h}px ${region.x}px)`;
+      s.style.transform = `translateX(${shift}px)`;
+      s.style.display = 'block';
+    });
+    tints.forEach(t => {
+      t.style.cssText += `;left:${region.x + (Math.random() - .5) * 20}px;top:${region.y + Math.random() * region.h}px;width:${region.w}px;height:${6 + Math.random() * 18}px;display:block`;
+    });
+  };
+  const hide = () => { slices.forEach(s => s.style.display = 'none'); tints.forEach(t => t.style.display = 'none'); };
+  const tear = () => {
+    if (!document.hidden) {
+      frame();
+      setTimeout(frame, 70);
+      setTimeout(frame, 140);
+      setTimeout(hide, 220);
+    }
+    setTimeout(tear, 3000 + Math.random() * 6000);
+  };
+  setTimeout(tear, 1500);
+})();
+</script>
+</body>
+</html>

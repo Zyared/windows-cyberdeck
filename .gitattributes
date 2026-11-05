@@ -1,0 +1,5 @@
+# windhawk-settings.ps1 holds Cyrillic and needs its UTF-8 BOM for PowerShell 5.1, so Git must leave these bytes alone.
+*.ps1 -text
+*.html text eol=lf
+*.ini text eol=crlf
+*.json text eol=lf

@@ -1,0 +1,8 @@
+# Generated on the machine by make-art.ps1 and make-icons.ps1
+*.png
+*.jpg
+*.cur
+*.ico
+live/data.js
+backup/
+*.log
