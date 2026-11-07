@@ -3,6 +3,8 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'common.ps1')
 if (-not (Test-Path (Join-Path $BackupDir 'complete.txt'))) { throw "No backup found in $BackupDir" }
 
+& (Join-Path $PSScriptRoot 'install-session.ps1') -Undo
+
 # Animated layer first, otherwise the live wallpaper would keep covering the restored picture.
 # The two programs stay installed, they just stop starting with Windows.
 $lively = 'C:\Program Files\Lively Wallpaper\Lively.exe'

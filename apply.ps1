@@ -29,7 +29,7 @@ foreach ($b in $RegBackups) {
 }
 
 # 2. Keep everything needed later outside the session folder.
-foreach ($f in 'common.ps1', 'restore.ps1', 'apply.ps1', 'apply-live.ps1', 'apply-wallpaper-engine.ps1', 'apply-icons.ps1', 'make-art.ps1', 'make-icons.ps1', 'windhawk-settings.ps1', 'live', 'rainmeter') { if ($src -ne $Home2) { Copy-Item (Join-Path $src $f) $Home2 -Recurse -Force } }
+foreach ($f in 'common.ps1', 'restore.ps1', 'apply.ps1', 'apply-live.ps1', 'apply-wallpaper-engine.ps1', 'apply-icons.ps1', 'make-art.ps1', 'make-icons.ps1', 'windhawk-settings.ps1', 'session-screen.ps1', 'install-session.ps1', 'live', 'rainmeter') { if ($src -ne $Home2) { Copy-Item (Join-Path $src $f) $Home2 -Recurse -Force } }
 $bat = '@echo off' + "`r`n" + 'powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0restore.ps1"' + "`r`n" + 'pause' + "`r`n"
 [IO.File]::WriteAllText((Join-Path $Home2 'Restore-Windows-Look.bat'), $bat)
 
@@ -39,7 +39,7 @@ $wall = Join-Path $Home2 'wallpaper.png'
 
 # 4. Colours. Registry colours are stored as ABGR.
 function Abgr([byte]$r, [byte]$g, [byte]$b) { [BitConverter]::ToInt32([byte[]]@($r, $g, $b, 255), 0) }
-$accent = Abgr 252 238 10
+$accent = Abgr 237 36 56
 $p = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize'
 Set-ItemProperty $p AppsUseLightTheme 0 -Type DWord
 Set-ItemProperty $p SystemUsesLightTheme 0 -Type DWord
@@ -47,16 +47,16 @@ Set-ItemProperty $p EnableTransparency 1 -Type DWord
 Set-ItemProperty $p ColorPrevalence 1 -Type DWord   # accent on Start and the taskbar, using the dark shades of the palette below
 $a = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Accent'
 if (-not (Test-Path $a)) { New-Item $a -Force | Out-Null }
-# The last three shades colour Start and the taskbar, so they are near-black with a yellow cast.
-[byte[]]$palette = 0xFF,0xFA,0xA8,0xFF, 0xFE,0xF5,0x6A,0xFF, 0xFD,0xF1,0x35,0xFF, 0xFC,0xEE,0x0A,0xFF, 0x4A,0x46,0x06,0xFF, 0x26,0x24,0x05,0xFF, 0x17,0x16,0x05,0xFF, 0xFF,0x00,0x3C,0xFF
+# The last three shades colour Start and the taskbar, so they are near-black with a dark red cast.
+[byte[]]$palette = 0xFF,0xB0,0xB8,0xFF, 0xFF,0x68,0x76,0xFF, 0xF5,0x42,0x55,0xFF, 0xED,0x24,0x38,0xFF, 0x6B,0x10,0x20,0xFF, 0x30,0x0C,0x14,0xFF, 0x17,0x0A,0x0E,0xFF, 0xFF,0x5C,0x68,0xFF
 Set-ItemProperty $a AccentPalette $palette -Type Binary
 Set-ItemProperty $a AccentColorMenu $accent -Type DWord
-Set-ItemProperty $a StartColorMenu (Abgr 23 22 5) -Type DWord
+Set-ItemProperty $a StartColorMenu (Abgr 23 10 14) -Type DWord
 $d = 'HKCU:\Software\Microsoft\Windows\DWM'
 Set-ItemProperty $d AccentColor $accent -Type DWord
-Set-ItemProperty $d ColorizationColor ([BitConverter]::ToInt32([byte[]]@(10, 238, 252, 196), 0)) -Type DWord
-Set-ItemProperty $d ColorizationAfterglow ([BitConverter]::ToInt32([byte[]]@(10, 238, 252, 196), 0)) -Type DWord
-Set-ItemProperty $d ColorPrevalence 1 -Type DWord   # yellow title bars and window borders
+Set-ItemProperty $d ColorizationColor ([BitConverter]::ToInt32([byte[]]@(56, 36, 237, 196), 0)) -Type DWord
+Set-ItemProperty $d ColorizationAfterglow ([BitConverter]::ToInt32([byte[]]@(56, 36, 237, 196), 0)) -Type DWord
+Set-ItemProperty $d ColorPrevalence 1 -Type DWord   # red title bars and window borders
 Set-ItemProperty $d EnableWindowColorization 1 -Type DWord
 
 # 5. Cursors: only three roles change, the rest keep the Windows defaults.
@@ -87,9 +87,9 @@ if ($wt) {
     $clean = $clean -replace ',(\s*[\]}])', '$1'
     $j = $clean | ConvertFrom-Json
     $scheme = [pscustomobject]@{
-      name = 'CyberDeck'; background = '#08080A'; foreground = '#E8E5D0'; cursorColor = '#FCEE0A'; selectionBackground = '#FCEE0A'
-      black = '#08080A'; red = '#FF003C'; green = '#FCEE0A'; yellow = '#FCEE0A'; blue = '#00F0FF'; purple = '#FF003C'; cyan = '#00F0FF'; white = '#E8E5D0'
-      brightBlack = '#918E74'; brightRed = '#FF4D73'; brightGreen = '#FFF95C'; brightYellow = '#FFF95C'; brightBlue = '#7DF7FF'; brightPurple = '#FF4D73'; brightCyan = '#7DF7FF'; brightWhite = '#FFFFFF'
+      name = 'CyberDeck'; background = '#08080A'; foreground = '#DBDBE0'; cursorColor = '#ED2438'; selectionBackground = '#ED2438'
+      black = '#08080A'; red = '#FF5C68'; green = '#ED2438'; yellow = '#ED2438'; blue = '#DBDBE0'; purple = '#FF5C68'; cyan = '#DBDBE0'; white = '#DBDBE0'
+      brightBlack = '#92929C'; brightRed = '#FF4D73'; brightGreen = '#FFF95C'; brightYellow = '#FFF95C'; brightBlue = '#7DF7FF'; brightPurple = '#FF4D73'; brightCyan = '#7DF7FF'; brightWhite = '#FFFFFF'
     }
     $schemes = @(@($j.schemes) | Where-Object { $_ -and $_.name -ne 'CyberDeck' }) + $scheme
     if ($j.PSObject.Properties['schemes']) { $j.schemes = $schemes } else { $j | Add-Member schemes $schemes }
@@ -106,5 +106,8 @@ if ($wt) {
   } catch { Write-Host "Terminal left unchanged: $($_.Exception.Message)" }
 }
 
+& (Join-Path $Home2 'make-icons.ps1') -OutDir (Join-Path $Home2 'icons')
+& (Join-Path $Home2 'apply-icons.ps1')
+& (Join-Path $Home2 'install-session.ps1')
 Refresh-Appearance
 Write-Host "Done. To undo: $Home2\Restore-Windows-Look.bat"

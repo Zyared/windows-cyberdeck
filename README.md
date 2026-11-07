@@ -1,69 +1,67 @@
-# CYBER//DECK: киберпанк-оформление Windows 11
+# ARASAKA / CYBER//DECK — оформление Windows 11
 
-Единый стиль для Windows 11: матовое стекло, кислотно-жёлтый, красный и голубой неон. Сочетается с темой [CYBER//DECK для Steam](https://github.com/Zyared/steam-cyberdeck-theme). Вся графика рисуется скриптами на месте, ничего не скачивается.
+Красно-чёрный корпоративный терминал из Cyberpunk 2077: эмблема Arasaka, 荒坂, Night City, сетка интерфейса и контрастные панели. Персональная фанатская тема, не официальный продукт CD PROJEKT RED.
 
 ## Что входит
 
-| Часть | Что делает | Чем |
-|---|---|---|
-| Обои и экран блокировки | Ночной город, надпись `CYBER//DECK` | `make-art.ps1` |
-| Живые обои | Мигающие окна и неон, летающие огни, глитч надписи, световой импульс | Lively Wallpaper или Wallpaper Engine |
-| HUD | Часы, CPU, память, диск, сеть | Rainmeter |
-| Иконки | Папки, диск, этот компьютер, сеть, библиотеки, корзина | `make-icons.ps1`, `apply-icons.ps1` |
-| Цвета и курсоры | Тёмный режим, жёлтый акцент, свои курсоры | `apply.ps1` |
-| «Пуск», Проводник, панель задач, контекстные меню, скрытые значки трея, быстрые настройки с Wi-Fi, уведомления, календарь, «Параметры» | Чёрное стекло, неоновые линии, заголовки в стиле HUD, значок `//`, жёлтые полосы дисков | Windhawk и шесть модов |
-| Windows Terminal | Цветовая схема `CyberDeck` | `apply.ps1` |
+| Часть | Реализация |
+|---|---|
+| Рабочий стол | HTML/SVG-обои, часы, мягкий импульс и сканирование; Wallpaper Engine или Lively |
+| Экран блокировки | Статическое изображение Arasaka через штатный Windows API |
+| Windows | Тёмный режим, красные акценты, курсоры и значки |
+| Пуск и панели | Эмблема Arasaka, красные рамки и подписи, почти чёрные поверхности через Windhawk |
+| Вход | Заставка на 6 секунд после входа в учётную запись |
+| Выключение и перезагрузка | Отдельные ярлыки Arasaka с заставкой на 9 секунд; Esc отменяет действие |
+| Дополнительно | Палитра Rainmeter и Windows Terminal при наличии поддерживаемой установки |
 
-## Установка
+## Установка с Wallpaper Engine
 
-Сторонние программы ставятся отдельно. Lively не нужен, если у тебя уже есть Wallpaper Engine:
+Перед обновлением сохраните папку `%USERPROFILE%\CyberDeck` и конфигурацию Wallpaper Engine. Исходная папка `backup` при повторной установке сохраняется.
 
-```bash
-winget install --id rocksdanister.LivelyWallpaper --exact
+В обычном Windows PowerShell из папки репозитория:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\apply.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\CyberDeck\apply-wallpaper-engine.ps1"
 ```
 
-```bash
-winget install --id Rainmeter.Rainmeter --exact
+Установка генерирует графику, применяет цвета, курсоры, значки, экран блокировки, автозапуск заставки и три ярлыка. Проводник перезапускается: окна папок закроются, программы остаются запущенными.
+
+Для меню и панелей нужны Windhawk и моды Windows 11 Start Menu Styler, Windows 11 File Explorer Styler, Windows 11 Taskbar Styler, Windows 11 Notification Center Styler, Windows 11 Settings Styler, Translucent Windows. Настройки применяются с правами администратора:
+
+```powershell
+Start-Process powershell -Verb RunAs -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$env:USERPROFILE\CyberDeck\windhawk-settings.ps1`" -WithTranslucent"
 ```
 
-```bash
-winget install --id RamenSoftware.Windhawk --exact
+Lively и Rainmeter — дополнительный вариант: `apply-live.ps1` требует установленный Rainmeter, а без `-Wallpaper WallpaperEngine` ещё и Lively. Для одного Wallpaper Engine этот скрипт не нужен.
+
+## Заставки сеанса
+
+- **Arasaka - Preview** показывает заставку без выключения.
+- **Arasaka - Shutdown** показывает отсчёт перед выключением Windows.
+- **Arasaka - Restart** показывает отсчёт перед перезагрузкой Windows.
+- Esc или закрытие окна до конца отсчёта отменяет действие.
+- `-Preview` для любого режима исключает вызов выключения.
+- Принудительное закрытие приложений не используется: программы с несохранёнными данными могут остановить завершение работы стандартным способом.
+
+```powershell
+powershell -NoProfile -STA -File .\session-screen.ps1 -Mode Shutdown -Preview
 ```
 
-В окне Windhawk через поиск поставь моды: **Windows 11 Start Menu Styler**, **Windows 11 File Explorer Styler**, **Windows 11 Taskbar Styler**, **Windows 11 Notification Center Styler**, **Windows 11 Settings Styler**, **Translucent Windows**. Настройки модов не меняй, их заполнит скрипт. Translucent Windows он ограничивает только Проводником.
-
-Затем запусти обычный PowerShell из папки проекта. Скрипты нельзя запускать из упакованных приложений: их записи в `AppData` не видит остальная Windows.
-
-```bash
-powershell -ExecutionPolicy Bypass -File apply.ps1
-```
-
-```bash
-powershell -ExecutionPolicy Bypass -File apply-live.ps1
-```
-
-С Wallpaper Engine вместо второй команды запусти эту. Обои появятся в его списке как проект `CYBER//DECK`:
-
-```bash
-powershell -ExecutionPolicy Bypass -File apply-live.ps1 -Wallpaper WallpaperEngine
-```
-
-Файлы копируются в `%USERPROFILE%\CyberDeck`. Windows запросит права администратора для настроек Windhawk и значка папок. Проводник перезапускается: окна папок закроются, программы продолжат работать.
+Заставка работает на основном экране пользовательского сеанса. Обычная кнопка выключения Windows её не запускает. Winlogon, экран обновлений и ранний логотип UEFI не подменяются. [Microsoft: Unbranded Boot и BGRT](https://learn.microsoft.com/en-us/windows/configuration/unbranded-boot/).
 
 ## Откат
 
-`%USERPROFILE%\CyberDeck\Restore-Windows-Look.bat` возвращает прежние обои, цвета, курсоры, значки, настройки терминала и экран блокировки, выключает моды и автозапуск Lively и Rainmeter. Если использовался Wallpaper Engine, возвращаются и его прежние обои. Сами программы остаются, их можно удалить в «Параметрах».
+`%USERPROFILE%\CyberDeck\Restore-Windows-Look.bat` использует исходный backup, возвращает прежние настройки и отключает моды. Также удаляет ярлыки Arasaka и автозапуск заставки. Программы остаются установленными. Только убрать заставки и ярлыки:
 
-Прежние настройки сохраняются в `%USERPROFILE%\CyberDeck\backup` при первом запуске.
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\CyberDeck\install-session.ps1" -Undo
+```
 
-## Что нельзя изменить
+## Проверки и ограничения
 
-- **Значки сторонних программ в трее:** их рисуют сами программы. Wi-Fi, звук и стрелка красятся в жёлтый.
+Графика генерируется локально. Обои не выполняют сетевые запросы. Надписи корпоративной сети — оформление, а не мониторинг защиты. Часы показывают время Windows. Анимации поддерживают паузу Wallpaper Engine и `prefers-reduced-motion`.
 
-Не добавляй цвет к `SystemTray.ChevronIconView` и общим правилам `TextBlock` в трее: такие правила вызвали циклические падения Проводника в `Windows.UI.Xaml.dll`.
+Windhawk зависит от сборки Windows. Не добавляйте окраску `SystemTray.ChevronIconView` и общих `TextBlock` в трее: ранее это вызывало падения Explorer в `Windows.UI.Xaml.dll`. Значки сторонних программ в трее задаются самими программами. Часть специальных значков Windows может сохраняться или требовать обновления кэша.
 
-## Что учесть
-
-- Windhawk встраивается в процессы Windows и может ломаться после её крупных обновлений. Если «Пуск» или Проводник начнут сбоить, выключи моды в его окне или запусти откат.
-- Стили рассчитаны на русскую Windows: часть заголовков «Пуска» заменяется по тексту.
-- Живые обои занимают около 490 МБ памяти.
+Реальную перезагрузку и выключение проверяйте после сохранения работы; предпросмотр их не проверяет.

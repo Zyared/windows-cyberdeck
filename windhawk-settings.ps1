@@ -18,16 +18,16 @@ if ($Off -or $On) {
   return
 }
 
-$K = '#08080A'; $Y = '#FCEE0A'; $R = '#FF003C'; $T = '#E8E5D0'; $D = '#918E74'
+$K = '#08080A'; $Y = '#ED2438'; $R = '#FF5C68'; $T = '#DBDBE0'; $D = '#92929C'
 $FONT = 'Bahnschrift'
-$Glow = '#33FCEE0A'; $Faint = '#14FCEE0A'; $Hair = '#44FCEE0A'
+$Glow = '#33ED2438'; $Faint = '#14ED2438'; $Hair = '#44ED2438'
 # Thin neon line that fades from yellow through nothing into red.
-$NeonH = '<LinearGradientBrush StartPoint="0,0" EndPoint="1,0"><GradientStop Color="#FFFCEE0A" Offset="0"/><GradientStop Color="#33FCEE0A" Offset="0.55"/><GradientStop Color="#FFFF003C" Offset="1"/></LinearGradientBrush>'
+$NeonH = '<LinearGradientBrush StartPoint="0,0" EndPoint="1,0"><GradientStop Color="#FFED2438" Offset="0"/><GradientStop Color="#33ED2438" Offset="0.55"/><GradientStop Color="#FFFF5C68" Offset="1"/></LinearGradientBrush>'
 # The same idea for a whole frame: bright at two opposite corners, nearly gone between them.
-$NeonD = '<LinearGradientBrush StartPoint="0,0" EndPoint="1,1"><GradientStop Color="#FFFCEE0A" Offset="0"/><GradientStop Color="#22FCEE0A" Offset="0.4"/><GradientStop Color="#22FF003C" Offset="0.7"/><GradientStop Color="#FFFF003C" Offset="1"/></LinearGradientBrush>'
-$Glass = '<WindhawkBlur BlurAmount="30" TintColor="#C808080A"/>'
-$GlassBar = '<WindhawkBlur BlurAmount="25" TintColor="#B008080A"/>'
-$TabFill = '<LinearGradientBrush StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#55FCEE0A" Offset="0"/><GradientStop Color="#10FCEE0A" Offset="1"/></LinearGradientBrush>'
+$NeonD = '<LinearGradientBrush StartPoint="0,0" EndPoint="1,1"><GradientStop Color="#FFED2438" Offset="0"/><GradientStop Color="#22ED2438" Offset="0.4"/><GradientStop Color="#22FF5C68" Offset="0.7"/><GradientStop Color="#FFFF5C68" Offset="1"/></LinearGradientBrush>'
+$Glass = '<WindhawkBlur BlurAmount="30" TintColor="#EE08090C"/>'
+$GlassBar = '<WindhawkBlur BlurAmount="25" TintColor="#EB08090C"/>'
+$TabFill = '<LinearGradientBrush StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#55ED2438" Offset="0"/><GradientStop Color="#10ED2438" Offset="1"/></LinearGradientBrush>'
 function Uri($n) { 'file:///' + ((Join-Path $icons $n) -replace '\\', '/') }
 
 $start = @(
@@ -43,11 +43,11 @@ $start = @(
   @('StartMenu.SearchBoxToggleButton > Grid > Border', @("Background=$Faint", "BorderBrush:=$NeonH", 'BorderThickness=0,0,0,1', 'CornerRadius=0')),
   @('StartMenu.SearchBoxToggleButton > Grid > Border#BorderElement', @("Background=$Faint", "BorderBrush:=$NeonH", 'BorderThickness=0,0,0,1', 'CornerRadius=0')),
   @('Cortana.UI.Views.TaskbarSearchPage > Grid#RootGrid@SearchBoxLocationStates > Border#TaskbarSearchBackground', @("Background=$Faint", "BorderBrush:=$NeonH", 'BorderThickness=0,0,0,1', 'CornerRadius=0')),
-  @('TextBlock#PlaceholderText', @("Foreground=$Y", "FontFamily=$FONT", 'CharacterSpacing=60', 'Text=> ПОИСК')),
-  @('TextBlock#PlaceholderTextContentPresenter', @("Foreground=$Y", "FontFamily=$FONT", 'CharacterSpacing=60', 'Text=> ПОИСК')),
+  @('TextBlock#PlaceholderText', @("Foreground=$Y", "FontFamily=$FONT", 'CharacterSpacing=60', 'Text=ARASAKA / ПОИСК')),
+  @('TextBlock#PlaceholderTextContentPresenter', @("Foreground=$Y", "FontFamily=$FONT", 'CharacterSpacing=60', 'Text=ARASAKA / ПОИСК')),
   @('Cortana.UI.Views.CortanaRichSearchBox#SearchTextBox', @("Foreground=$Y", "FontFamily=$FONT")),
   # section headers in HUD style
-  @('TextBlock#PinnedListHeaderText', @("Foreground=$Y", "FontFamily=$FONT", 'FontWeight=SemiBold', 'FontSize=17', 'CharacterSpacing=140', 'Text=// ЗАКРЕПЛЕНО')),
+  @('TextBlock#PinnedListHeaderText', @("Foreground=$Y", "FontFamily=$FONT", 'FontWeight=SemiBold', 'FontSize=17', 'CharacterSpacing=140', 'Text=ARASAKA / ПРИЛОЖЕНИЯ')),
   @('TextBlock[Text=Все]', @("Foreground=$Y", "FontFamily=$FONT", 'FontWeight=SemiBold', 'FontSize=17', 'CharacterSpacing=140', 'Text=// ВСЕ')),
   @('TextBlock#AppDisplayName', @("Foreground=$T", "FontFamily=$FONT")),
   # category plates stay glass until hovered
@@ -214,7 +214,7 @@ Write-Mod $ids[0] $start $startVars
 $sk = "$root\$($ids[0])\Settings"
 Set-ItemProperty $sk 'webContentStyles[0].target' 'body' -Type String
 Set-ItemProperty $sk 'webContentStyles[0].styles[0]' 'background: transparent !important' -Type String
-Set-ItemProperty $sk 'webContentStyles[0].styles[1]' 'color: #E8E5D0 !important' -Type String
+Set-ItemProperty $sk 'webContentStyles[0].styles[1]' 'color: #DBDBE0 !important' -Type String
 Stamp $ids[0]
 Write-Mod $ids[1] $explorer $explorerVars
 # The window backdrop comes from Translucent Windows when it is installed, because only it takes a custom tint.
@@ -232,11 +232,11 @@ if ($translucent -and $WithTranslucent) {
   Set-ItemProperty $ts 'RenderingMod.SysColors' 0 -Type DWord
   Set-ItemProperty $ts 'RenderingMod.AccentColorControls' 1 -Type DWord
   Set-ItemProperty $ts 'BackgroundEffects.type' 'acrylicblur' -Type String
-  Set-ItemProperty $ts 'BackgroundEffects.AccentBlurBehind' 'C808080A' -Type String
+  Set-ItemProperty $ts 'BackgroundEffects.AccentBlurBehind' 'EE08090C' -Type String
   Set-ItemProperty $ts 'FlyoutsEffects' 1 -Type DWord
   Set-ItemProperty "$root\$translucent" Disabled 0 -Type DWord
   Stamp $translucent
-  Write-Host "$translucent : explorer only, tint C808080A"
+  Write-Host "$translucent : explorer only, tint EE08090C"
 }
 if (Test-Path "$root\$($ids[2])") { Write-Mod $ids[2] $taskbar $taskbarVars }
 if (Test-Path "$root\$($ids[5])") { Write-Mod $ids[5] $notify $startVars }

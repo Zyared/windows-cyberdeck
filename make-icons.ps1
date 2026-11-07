@@ -3,12 +3,12 @@ param([Parameter(Mandatory)][string]$OutDir)
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
 
-$colY = [Drawing.Color]::FromArgb(252, 238, 10)
-$colD = [Drawing.Color]::FromArgb(150, 142, 6)
+$colY = [Drawing.Color]::FromArgb(237, 36, 56)
+$colD = [Drawing.Color]::FromArgb(114, 21, 35)
 $colR = [Drawing.Color]::FromArgb(255, 0, 60)
 $colK = [Drawing.Color]::FromArgb(10, 10, 12)
 $colP = [Drawing.Color]::FromArgb(30, 30, 36)
-$colT = [Drawing.Color]::FromArgb(232, 229, 208)
+$colT = [Drawing.Color]::FromArgb(219, 219, 224)
 
 function Brush($c) { New-Object Drawing.SolidBrush $c }
 function PenOf($c, $w) { $p = New-Object Drawing.Pen($c, [single]$w); $p.LineJoin = 'Miter'; $p }
@@ -26,7 +26,7 @@ function Line($g, $c, $w, $x1, $y1, $x2, $y2) { $g.DrawLine((PenOf $c $w), [sing
 function FolderBase($g) {
   Poly $g $colD @(2,6, 12,6, 15,9, 30,9, 30,14, 2,14)
   $rect = New-Object Drawing.RectangleF(2, 12, 28, 18)
-  $br = New-Object Drawing.Drawing2D.LinearGradientBrush($rect, [Drawing.Color]::FromArgb(255, 246, 80), $colY, [single]90)
+  $br = New-Object Drawing.Drawing2D.LinearGradientBrush($rect, [Drawing.Color]::FromArgb(255, 104, 118), $colY, [single]90)
   $pts = [Drawing.PointF[]]@((New-Object Drawing.PointF(2, 13)), (New-Object Drawing.PointF(30, 13)), (New-Object Drawing.PointF(30, 25)), (New-Object Drawing.PointF(25.5, 29.5)), (New-Object Drawing.PointF(2, 29.5)))
   $g.FillPolygon($br, $pts)
   Line $g $colR 1.8 4 27 11 27
@@ -167,10 +167,12 @@ function Write-Png($path, $size, [scriptblock]$painter) {
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
 foreach ($name in $painters.Keys) { Write-Ico (Join-Path $OutDir "$name.ico") $painters[$name] }
 
-# Taskbar: the Start mark is the // from the wordmark, Task View two offset frames.
+# Taskbar: the Start mark is the Arasaka emblem, Task View two offset frames.
 Write-Png (Join-Path $OutDir 'start.png') 96 { param($g)
-  Poly $g $colY @(13,4, 18,4, 9,28, 4,28)
-  Poly $g $colR @(25,4, 30,4, 21,28, 16,28)
+  Line $g $colY 2.6 16 7 16 30
+  Line $g $colY 2.6 16 22 5 13
+  Line $g $colY 2.6 16 22 27 13
+  foreach ($xy in @(@(12,2),@(1,8),@(23,8))) { $g.FillEllipse((Brush $colY),[single]$xy[0],[single]$xy[1],8,8) }
 }
 Write-Png (Join-Path $OutDir 'taskview.png') 96 { param($g)
   Outline $g $colD 2 @(10,5, 28,5, 28,19, 24,19)

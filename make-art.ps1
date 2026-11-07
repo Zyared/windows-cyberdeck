@@ -1,12 +1,12 @@
-# Draws the CYBER//DECK wallpaper, lock screen and cursors. All artwork is generated here, nothing is downloaded.
+﻿# Draws the CYBER//DECK wallpaper, lock screen and cursors. All artwork is generated here, nothing is downloaded.
 param([Parameter(Mandatory)][string]$OutDir)
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName System.Windows.Forms
 
-$colY = [Drawing.Color]::FromArgb(252, 238, 10)
-$colR = [Drawing.Color]::FromArgb(255, 0, 60)
-$colC = [Drawing.Color]::FromArgb(0, 240, 255)
+$colY = [Drawing.Color]::FromArgb(237, 36, 56)
+$colR = [Drawing.Color]::FromArgb(255, 92, 104)
+$colC = [Drawing.Color]::FromArgb(219, 219, 224)
 $colK = [Drawing.Color]::FromArgb(8, 8, 10)
 function A($color, $alpha) { [Drawing.Color]::FromArgb($alpha, $color) }
 function Brush($color) { New-Object Drawing.SolidBrush $color }
@@ -21,129 +21,40 @@ function Get-Font($size) {
 }
 
 function Draw-Scene($W, $H, [bool]$Lock, $Path) {
-  $bmp = New-Object Drawing.Bitmap($W, $H, [Drawing.Imaging.PixelFormat]::Format24bppRgb)
+  $bmp = New-Object Drawing.Bitmap($W, $H)
   $g = [Drawing.Graphics]::FromImage($bmp)
-  $g.SmoothingMode = 'AntiAlias'
-  $g.TextRenderingHint = 'AntiAliasGridFit'
-  $s = $H / 1080.0
-  $rnd = New-Object Random 2077
-
-  # background
-  $rect = New-Object Drawing.Rectangle(0, 0, $W, $H)
-  $bg = New-Object Drawing.Drawing2D.LinearGradientBrush($rect, [Drawing.Color]::FromArgb(6, 6, 8), [Drawing.Color]::FromArgb(26, 24, 8), [single]35)
-  $g.FillRectangle($bg, $rect)
-
-  # faint diagonal hatching
-  $pen = New-Object Drawing.Pen((A $colY 7), [single]1)
-  for ($x = -$H; $x -lt $W; $x += [int](26 * $s)) { $g.DrawLine($pen, $x, 0, $x + $H, $H) }
-
-  # glow behind the city
-  $path1 = New-Object Drawing.Drawing2D.GraphicsPath
-  $gx = $W * 0.68; $gy = $H * 0.82; $gr = $W * 0.46
-  $path1.AddEllipse([single]($gx - $gr), [single]($gy - $gr * 0.62), [single]($gr * 2), [single]($gr * 1.24))
-  $pg = New-Object Drawing.Drawing2D.PathGradientBrush($path1)
-  $pg.CenterColor = A $colY 62
-  $pg.SurroundColors = @((A $colY 0))
-  $g.FillPath($pg, $path1)
-
-  # acid-yellow blade on the right
-  $g.FillPolygon((Brush (A $colY 235)), [Drawing.PointF[]]@((P ($W * 0.885) 0), (P $W 0), (P $W ($H * 0.40)), (P ($W * 0.74) ($H * 0.40 + $W * 0.26 * 0.0)), (P ($W * 0.885) 0)) )
-  $g.FillPolygon((Brush $colK), [Drawing.PointF[]]@((P ($W * 0.915) 0), (P ($W * 0.93) 0), (P ($W * 0.79) ($H * 0.40)), (P ($W * 0.775) ($H * 0.40))))
-  $g.FillPolygon((Brush $colR), [Drawing.PointF[]]@((P ($W * 0.74) ($H * 0.40)), (P $W ($H * 0.40)), (P $W ($H * 0.414)), (P ($W * 0.735) ($H * 0.414))))
-
-  # city: two layers of towers with lit windows
-  $base = $H - [int](40 * $s)
-  foreach ($layer in 0, 1) {
-    $x = [int]($W * 0.30)
-    $col = if ($layer -eq 0) { [Drawing.Color]::FromArgb(24, 23, 16) } else { [Drawing.Color]::FromArgb(11, 11, 13) }
-    while ($x -lt $W) {
-      $tw = [int]($rnd.Next(46, 120) * $s)
-      $progress = ($x - $W * 0.30) / ($W * 0.70)
-      $maxH = (150 + 400 * [Math]::Sin([Math]::PI * [Math]::Min(1, $progress) * 0.82)) * $s
-      if ($layer -eq 1) { $maxH *= 0.66 }
-      $th = [int]($maxH * (0.55 + $rnd.NextDouble() * 0.45))
-      $top = $base - $th
-      $g.FillRectangle((Brush $col), $x, $top, $tw, $th + [int](60 * $s))
-      if ($rnd.NextDouble() -lt 0.3) { $g.FillRectangle((Brush $col), $x + [int]($tw / 2), $top - [int](46 * $s), [Math]::Max(2, [int](3 * $s)), [int](46 * $s)) }
-      $winCol = if ($layer -eq 0) { 60 } else { 190 }
-      for ($wy = $top + [int](10 * $s); $wy -lt $base; $wy += [int](13 * $s)) {
-        for ($wx = $x + [int](6 * $s); $wx -lt $x + $tw - [int](6 * $s); $wx += [int](10 * $s)) {
-          if ($rnd.NextDouble() -lt 0.16) {
-            $r = $rnd.NextDouble()
-            $c2 = if ($r -lt 0.74) { $colY } elseif ($r -lt 0.88) { $colR } else { $colC }
-            $g.FillRectangle((Brush (A $c2 $winCol)), $wx, $wy, [Math]::Max(2, [int](5 * $s)), [Math]::Max(2, [int](6 * $s)))
-            if (-not $Lock -and $layer -eq 1) { [void]$script:LiveWindows.Add(@($wx, $wy, [Math]::Max(2, [int](5 * $s)), [Math]::Max(2, [int](6 * $s)), ('#{0:X2}{1:X2}{2:X2}' -f $c2.R, $c2.G, $c2.B))) }
-          }
-        }
-      }
-      if ($layer -eq 1 -and $rnd.NextDouble() -lt 0.22) {
-        $c3 = if ($rnd.NextDouble() -lt 0.6) { $colR } else { $colY }
-        $g.FillRectangle((Brush (A $c3 215)), $x + [int](4 * $s), $top + [int](16 * $s), [Math]::Max(3, [int](5 * $s)), [int]($th * 0.34))
-        if (-not $Lock) { [void]$script:LiveNeon.Add(@(($x + [int](4 * $s)), ($top + [int](16 * $s)), [Math]::Max(3, [int](5 * $s)), [int]($th * 0.34), ('#{0:X2}{1:X2}{2:X2}' -f $c3.R, $c3.G, $c3.B))) }
-      }
-      $x += $tw + [int]($rnd.Next(-6, 18) * $s)
-    }
-  }
-
-  # wordmark, sheared, with red and cyan channel split and a few torn bands
-  $fs = 176 * $s
-  $font = Get-Font $fs
-  $tx = if ($Lock) { $W * 0.09 } else { $W * 0.36 }
-  $ty = if ($Lock) { $H * 0.60 } else { $H * 0.17 }
-  $sf = New-Object Drawing.StringFormat
-  $write = {
-    param($gr, $dx, $partColA, $partColB)
-    $st = $gr.Save()
-    $gr.TranslateTransform([single]($tx + $dx), [single]$ty)
-    $gr.MultiplyTransform((New-Object Drawing.Drawing2D.Matrix(1, 0, -0.18, 1, 0, 0)))
-    $sz1 = $gr.MeasureString('CYBER', $font, 2000, [Drawing.StringFormat]::GenericTypographic)
-    $gr.DrawString('CYBER', $font, (Brush $partColA), 0, 0, [Drawing.StringFormat]::GenericTypographic)
-    $gr.DrawString('//', $font, (Brush $partColB), [single]($sz1.Width + 8 * $s), 0, [Drawing.StringFormat]::GenericTypographic)
-    $sz2 = $gr.MeasureString('//', $font, 2000, [Drawing.StringFormat]::GenericTypographic)
-    $gr.DrawString('DECK', $font, (Brush $partColA), [single]($sz1.Width + $sz2.Width + 16 * $s), 0, [Drawing.StringFormat]::GenericTypographic)
-    $gr.Restore($st)
-  }
-  & $write $g (-3 * $s) (A $colC 215) (A $colC 215)
-  & $write $g (3 * $s) (A $colR 225) (A $colR 225)
-  & $write $g 0 $colY $colR
-
-  # a few thin torn bands, limited to the wordmark so the letters stay readable
-  $textW = [int]($g.MeasureString('CYBER//DECK', $font).Width)
-  $bandX = [int]($tx - 50 * $s)
-  $bandTop = [int]($ty + $fs * 0.12); $bandMax = [int]($ty + $fs * 0.95)
-  foreach ($i in 1..4) {
-    $by = $rnd.Next($bandTop, $bandMax)
-    $bh = [Math]::Max(2, [int]($rnd.Next(3, 7) * $s))
-    $shift = [int]($rnd.Next(-14, 14) * $s)
-    $src = New-Object Drawing.Rectangle($bandX, $by, $textW, $bh)
-    $slice = $bmp.Clone($src, $bmp.PixelFormat)
-    $g.DrawImageUnscaled($slice, $bandX + $shift, $by)
-    $slice.Dispose()
-  }
-
-  # small HUD text
-  $small = Get-Font (22 * $s)
-  $hudX = $tx + 4 * $s; $hudY = $ty + $fs * 1.2
-  $g.DrawString('SYS ONLINE  //  NEURAL LINK STABLE  //  ICE ACTIVE', $small, (Brush $colC), [single]$hudX, [single]$hudY)
-  $g.FillRectangle((Brush $colY), [single]$hudX, [single]($hudY + 34 * $s), [single](470 * $s), [single](3 * $s))
-
-  # corner brackets
-  $b = New-Object Drawing.Pen($colY, [single](3 * $s))
-  $m = 26 * $s; $l = 62 * $s; $bot = if ($Lock) { $H - $m } else { $H - 78 * $s }
-  if ($Lock) {   # on the desktop they would sit underneath the icons
-    $g.DrawLines($b, [Drawing.PointF[]]@((P $m ($m + $l)), (P $m $m), (P ($m + $l) $m)))
-    $g.DrawLines($b, [Drawing.PointF[]]@((P $m ($bot - $l)), (P $m $bot), (P ($m + $l) $bot)))
-    $g.DrawLines($b, [Drawing.PointF[]]@((P ($W - $m - $l) $bot), (P ($W - $m) $bot), (P ($W - $m) ($bot - $l))))
-  }
-
-
-  # scanlines
-  $sl = New-Object Drawing.Pen((A ([Drawing.Color]::Black) 44), [single]1)
-  for ($y2 = 0; $y2 -lt $H; $y2 += 3) { $g.DrawLine($sl, 0, $y2, $W, $y2) }
-
-  $g.Dispose()
-  $bmp.Save($Path, [Drawing.Imaging.ImageFormat]::Png)
-  $bmp.Dispose()
+  $g.SmoothingMode = 'AntiAlias'; $g.TextRenderingHint = 'AntiAliasGridFit'
+  $g.Clear([Drawing.Color]::FromArgb(8,9,12))
+  $g.ScaleTransform([single]($W/1920), [single]($H/1080))
+  function Box($x,$y,$w,$h,$hex) { $g.FillRectangle((Brush ([Drawing.ColorTranslator]::FromHtml($hex))),[single]$x,[single]$y,[single]$w,[single]$h) }
+  function Txt($text,$size,$x,$y,$hex) { $f=Get-Font $size; $g.DrawString($text,$f,(Brush ([Drawing.ColorTranslator]::FromHtml($hex))),[single]$x,[single]$y); $f.Dispose() }
+  $line=New-Object Drawing.Pen([Drawing.ColorTranslator]::FromHtml('#25151b'),1)
+  for($x=0;$x -lt 1920;$x+=60){$g.DrawLine($line,$x,0,$x,1080)}
+  for($y=0;$y -lt 1080;$y+=60){$g.DrawLine($line,0,$y,1920,$y)}
+  Box 0 0 1920 6 '#ed2438'; Box 0 1000 1920 80 '#101014'
+  Box 340 100 4 830 '#ed2438'
+  Txt 'ARASAKA CORPORATION' 22 380 100 '#ed2438'
+  Txt 'NIGHT CITY  /  NORTH AMERICAN DIVISION' 17 380 137 '#92929c'
+  Txt '荒坂' 76 1520 110 '#ed2438'
+  # Three-branched Arasaka emblem; native geometry stays crisp at any resolution.
+  $red=Brush ([Drawing.ColorTranslator]::FromHtml('#ed2438'))
+  $pen=New-Object Drawing.Pen([Drawing.ColorTranslator]::FromHtml('#ed2438'),20)
+  $g.DrawLine($pen,1180,400,1180,630); $g.DrawLine($pen,1180,540,1040,440); $g.DrawLine($pen,1180,540,1320,440)
+  foreach($xy in @(@(1135,310),@(995,370),@(1275,370))){$g.FillEllipse($red,[single]$xy[0],[single]$xy[1],90,90)}
+  Txt 'ARASAKA' 136 810 650 '#ed2438'
+  Txt 'SECURE YOUR FUTURE.' 28 905 810 '#dbdbe0'
+  Box 380 310 295 4 '#ed2438'
+  Txt 'CORPORATE' 36 380 345 '#dbdbe0'; Txt 'ACCESS TERMINAL' 31 380 390 '#dbdbe0'
+  Txt '01  /  PERSONNEL INTERFACE' 16 380 465 '#92929c'
+  Txt '02  /  NIGHT CITY NETWORK' 16 380 505 '#92929c'
+  Txt '03  /  COUNTERINTELLIGENCE' 16 380 545 '#92929c'
+  Box 380 650 295 100 '#251017'
+  Txt 'RESTRICTED' 30 398 664 '#ed2438'
+  Txt 'AUTHORIZED PERSONNEL ONLY' 15 398 714 '#dbdbe0'
+  Txt 'CYBERPUNK 2077  /  ARASAKA SYSTEMS' 17 380 942 '#92929c'
+  Txt 'PROPERTY OF ARASAKA CORPORATION' 18 40 1023 '#ed2438'
+  Txt 'NC-01     //     CORPORATE NETWORK     //     2077' 17 1250 1023 '#92929c'
+  $g.Dispose(); $bmp.Save($Path,[Drawing.Imaging.ImageFormat]::Png); $bmp.Dispose()
 }
 
 # Writes a real .cur file: 32-bit images with the hotspot in the header, one image per size.
