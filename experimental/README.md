@@ -62,3 +62,33 @@ other inclusion entries. A copy is installed under CyberDeck/experimental for th
 desktop Disable-Arasaka-Logon.cmd recovery shortcut. No visual success is claimed
 until the user tests the actual sign-in view. Shutdown text and boot animation
 are not implemented by this PasswordBox prototype.
+## Shutdown status and indicator trial (2026-11-08)
+
+`arasaka-shutdown-styler.wh.cpp` is a separate LogonUI-only mod. It hooks two
+exact ABI symbol names verified in the matching Microsoft PDB for this machine's
+Windows.UI.Logon.dll (PDB key 8C8C62BA7F33DC5D6B5230A45C346DD31): the display-message
+status getter and ShutdownProgressSpinnerSelector's ABI template selector.
+It does not hook winlogon, authentication, shutdown decisions, or generic string
+creation. Original functions execute first. Unknown statuses and failures pass
+through; only exact Russian/English Shutting down and Restarting labels change.
+The shutdown template becomes an Arasaka label and red indeterminate ProgressBar.
+If template construction fails, the original returned template remains in use.
+No worker thread, polling, custom timers, or retained XAML objects are introduced.
+
+Build: `powershell -File .\experimental\build.ps1 -Shutdown`.
+Test: `powershell -File .\experimental\test-shutdown.ps1` (requires Python).
+The test embeds a compatibility manifest in its own executable, instantiates the
+real XAML DataTemplate and checks the ProgressBar, plus exact text mappings and
+preservation of unknown/error/update text. It does not test private ABI calls in
+LogonUI, actual on-screen animation, or live unload. Missing exact symbols make
+initialization fail without applying replacements. The symbol download may add
+latency on first use. The local installer is `enable-shutdown-test.ps1`, excluded
+from the general installer. Both this mod and the earlier login trial are covered
+by `enable-local-test.ps1 -Disable` and the emergency CMD.
+
+On the current PC it has been registered and enabled for user testing; actual
+shutdown presentation is not yet observed. This does not customize the early
+Windows kernel boot spinner. HackBGRT was separately installed with a new EFI
+entry, leaving bootmgfw.efi unchanged and Secure Boot enabled. See
+[the first-boot instructions](Arasaka-First-Boot.md). The root-level
+Restore-Windows-Boot.cmd contains the current user's installed setup path.

@@ -8,7 +8,7 @@ if errorlevel 1 (
  exit /b 1
 )
 echo Disabling Windhawk appearance mods. No system files or boot settings will be changed.
-for %%M in (windows-11-start-menu-styler windows-11-file-explorer-styler windows-11-taskbar-styler windows-11-notification-center-styler windows-11-settings-styler translucent-windows local@translucent-windows-fork arasaka-logon-styler local@arasaka-logon-styler lock-screen-clock-styler lockscreen-datetime-format) do (
+for %%M in (windows-11-start-menu-styler windows-11-file-explorer-styler windows-11-taskbar-styler windows-11-notification-center-styler windows-11-settings-styler translucent-windows local@translucent-windows-fork arasaka-logon-styler local@arasaka-logon-styler arasaka-shutdown-styler local@arasaka-shutdown-styler lock-screen-clock-styler lockscreen-datetime-format) do (
  reg query "HKLM\SOFTWARE\Windhawk\Engine\Mods\%%M" >nul 2>&1
  if not errorlevel 1 (
   reg add "HKLM\SOFTWARE\Windhawk\Engine\Mods\%%M" /v Disabled /t REG_DWORD /d 1 /f

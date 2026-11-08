@@ -8,6 +8,8 @@ $target = '%systemroot%\system32\logonui.exe'
 $include = [string](Get-ItemProperty $engine).Include
 if ($Disable) {
     if (Test-Path $key) { Set-ItemProperty $key Disabled 1 }
+    $shutdownKey = 'HKLM:\SOFTWARE\Windhawk\Engine\Mods\arasaka-shutdown-styler'
+    if (Test-Path $shutdownKey) { Set-ItemProperty $shutdownKey Disabled 1 }
     $remaining = @($include -split '\|' | Where-Object { $_ -and $_ -ine $target })
     Set-ItemProperty $engine Include ($remaining -join '|')
     Write-Output 'LogonUI mod disabled; explicit injection inclusion removed. Restart Windows manually if needed.'
