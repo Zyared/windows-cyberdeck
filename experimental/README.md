@@ -48,3 +48,17 @@ Run `build.ps1` first to create the build directory. Keep the adjacent header wi
 the source when compiling; importing the single cpp into an editor is insufficient.
 The join follows the Windows requirement to service messages on window-owning
 threads: [Microsoft documentation](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-msgwaitformultipleobjectsex).
+## Explicit local test on 2026-11-08
+
+At the user's explicit request, version 0.1.1 was compiled with the research gate
+open and registered on the current PC with enableStyling=1. This is a local trial,
+not completion of the integration validation above. `enable-local-test.ps1` is an
+administrator-only helper for this trial and remains outside the main installer.
+It expects an already built research DLL, registers the exact LogonUI target and
+adds only `%systemroot%\system32\logonui.exe` to the engine inclusion list. Global
+critical-process injection remains disabled. It does not lock or reboot Windows.
+`-Disable` disables this mod and removes that explicit engine inclusion, retaining
+other inclusion entries. A copy is installed under CyberDeck/experimental for the
+desktop Disable-Arasaka-Logon.cmd recovery shortcut. No visual success is claimed
+until the user tests the actual sign-in view. Shutdown text and boot animation
+are not implemented by this PasswordBox prototype.
