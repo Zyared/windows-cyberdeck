@@ -123,7 +123,7 @@ $scr = [Windows.Forms.Screen]::PrimaryScreen.Bounds
 $script:LiveWindows = New-Object Collections.ArrayList
 $script:LiveNeon = New-Object Collections.ArrayList
 Draw-Scene $scr.Width $scr.Height $false (Join-Path $OutDir 'wallpaper.png')
-Draw-Scene $scr.Width $scr.Height $true (Join-Path $OutDir 'lockscreen.png')
+& (Join-Path $PSScriptRoot 'make-lockscreen.ps1') -OutDir $OutDir -Width $scr.Width -Height $scr.Height
 
 # Data for the animated wallpaper: the same picture plus where its lights are, so the real windows flicker.
 $live = Join-Path $OutDir 'live'

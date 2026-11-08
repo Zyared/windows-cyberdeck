@@ -17,7 +17,7 @@ $shellIcons = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Ic
 function Stamp($id) { Set-ItemProperty "$root\$id" SettingsChangeTime ([int][DateTimeOffset]::UtcNow.ToUnixTimeSeconds()) -Type DWord }
 
 if ($Off -or $On) {
-  foreach ($id in $ids[0, 1, 2, 5, 6]) { if (Test-Path "$root\$id") { Set-ItemProperty "$root\$id" Disabled ([int][bool]$Off) -Type DWord; Stamp $id } }
+  foreach ($id in ($ids[0, 1, 2, 5, 6] + 'lock-screen-clock-styler')) { if (Test-Path "$root\$id") { Set-ItemProperty "$root\$id" Disabled ([int][bool]$Off) -Type DWord; Stamp $id } }
   if ($Off) { foreach ($id in $ids[3..4]) { if (Test-Path "$root\$id") { Set-ItemProperty "$root\$id" Disabled 1 -Type DWord; Stamp $id } } }
   if ($Off -and (Test-Path $shellIcons)) { Remove-Item $shellIcons -Recurse -Force }
   Write-Host "Mods disabled: $([bool]$Off)"
@@ -69,6 +69,33 @@ $start = @(
 )
 $startVars = @("MenuFlyoutItemBackgroundPointerOver=$Glow", "MenuFlyoutItemForegroundPointerOver=$Y")
 
+# Named visual elements provided by Lock Screen Clock Styler 0.6.x.
+$clockMod = 'lock-screen-clock-styler'
+$formatMod = 'lockscreen-datetime-format'
+$hasClockMod = Test-Path "$root\$clockMod\Settings"
+if ($hasClockMod) {
+  $hud = 'Grid#WindhawkCyberpunkHUDContainer'
+  $start += @(
+    @($hud, @('HorizontalAlignment=Left', 'VerticalAlignment=Top', 'Margin=120,160,0,0')),
+    @('TextBlock#WindhawkCyberHourText, TextBlock#WindhawkCyberMinText, TextBlock#WindhawkCyberSecText', @("Foreground=$Y", 'FontFamily=Bahnschrift')),
+    @('TextBlock#WindhawkCyberDateText, TextBlock#WindhawkCyberBatteryText', @("Foreground=$T")),
+    @("$hud > StackPanel > Grid > Border", @('Background=#EE08090C', "BorderBrush=$Y", 'CornerRadius=0')),
+    @("$hud > StackPanel > Grid > Grid > Rectangle", @("Fill=$Y")),
+    @("$hud > StackPanel > Grid > Border > StackPanel > Rectangle", @("Fill=$Hair")),
+    @("$hud > StackPanel > Grid > Border > StackPanel > Grid > TextBlock", @("Foreground=$Y", 'Text=ARASAKA // TIME_SYNC')),
+    @("$hud > StackPanel > Grid > Border > StackPanel > Grid > StackPanel > Rectangle", @("Fill=$Y")),
+    @("$hud > StackPanel > Grid > Border > StackPanel > Grid > StackPanel > TextBlock", @("Foreground=$T")),
+    @("$hud > StackPanel > Grid > Border > StackPanel > StackPanel > Border", @("Background=$Y", 'CornerRadius=0'))
+  )
+} else {
+  # Fallback for installations without the optional clock mod.
+  $start += @(
+    @('StackPanel#TimeAndDatePanel', @('HorizontalAlignment=Left', 'VerticalAlignment=Top', 'Margin=120,160,0,0', 'Width=620')),
+    @('StackPanel#TimePanel', @('HorizontalAlignment=Left')),
+    @('StackPanel#TimePanel > TextBlock#Time', @('HorizontalAlignment=Left', "Foreground=$Y", 'FontFamily=Bahnschrift', 'FontSize=112')),
+    @('StackPanel#TimeAndDatePanel > TextBlock#Date', @('HorizontalAlignment=Left', "Foreground=$T", 'FontFamily=Bahnschrift', 'FontSize=24'))
+  )
+}
 $explorer = @(
   # everything on top is see-through, so the window backdrop shows through as one sheet of glass
   @('Grid#TabContainerGrid', @('Background=Transparent')),
@@ -217,6 +244,14 @@ if (-not (Test-Path $bak)) { & cmd.exe /c "reg export HKLM\SOFTWARE\Windhawk\Eng
 $colors = Join-Path $home2 'backup\colors.reg'
 if (-not (Test-Path $colors)) { & cmd.exe /c "reg export `"HKCU\Control Panel\Colors`" `"$colors`" /y >nul 2>&1" }
 Write-Mod $ids[0] $start $startVars
+if (Test-Path "$root\$($ids[0])") {
+  $startKey = Get-Item -LiteralPath "$root\$($ids[0])"
+  $included = @(([string]$startKey.GetValue('Include')).Split('|') | Where-Object { $_ })
+  if ($included -notcontains 'LockApp.exe') {
+    Set-ItemProperty -LiteralPath "$root\$($ids[0])" -Name Include -Value (($included + 'LockApp.exe') -join '|') -Type String
+  }
+  Stamp $ids[0]
+}
 # Search results are a web page inside SearchHost, so they take CSS.
 $sk = "$root\$($ids[0])\Settings"
 if (Test-Path -LiteralPath $sk) {
@@ -259,4 +294,21 @@ Set-ItemProperty $shellIcons '3' ((Join-Path $icons 'folder.ico') + ',0') -Type 
 Set-ItemProperty $shellIcons '4' ((Join-Path $icons 'folderopen.ico') + ',0') -Type String
 Set-ItemProperty $shellIcons '8' ((Join-Path $icons 'drive.ico') + ',0') -Type String
 Write-Host 'Shell icons set.'
+
+# Clock Styler draws its own live time and date; the format mod is kept installed
+# but disabled while this clock is selected because it formats the hidden stock clock.
+if ($hasClockMod) {
+  $saved = Join-Path $home2 'backup\lockscreen-mods.reg'
+  if (-not (Test-Path -LiteralPath $saved)) {
+    & reg.exe export "HKLM\SOFTWARE\Windhawk\Engine\Mods\lock-screen-clock-styler" $saved /y | Out-Null
+    if (Test-Path "$root\$formatMod") { & reg.exe export "HKLM\SOFTWARE\Windhawk\Engine\Mods\lockscreen-datetime-format" (Join-Path $home2 'backup\lockscreen-format-mod.reg') /y | Out-Null }
+  }
+  $clockSettings = "$root\$clockMod\Settings"
+  foreach ($pair in @{clockStyle='cyberpunk';timeFormat='24h';clockAlignment='left'}.GetEnumerator()) { Set-ItemProperty -LiteralPath $clockSettings -Name $pair.Key -Value $pair.Value -Type String }
+  foreach ($pair in @{showSeconds=1;clockFontSize=80;verticalOffset=0;hideDefaultClock=1;showDateCapsule=1;showBatteryStatus=1;hideDefaultWidgets=0}.GetEnumerator()) { Set-ItemProperty -LiteralPath $clockSettings -Name $pair.Key -Value $pair.Value -Type DWord }
+  Set-ItemProperty "$root\$clockMod" Disabled 0 -Type DWord
+  Stamp $clockMod
+  if (Test-Path "$root\$formatMod") { Set-ItemProperty "$root\$formatMod" Disabled 1 -Type DWord; Stamp $formatMod }
+  Write-Host 'Lock Screen Clock Styler: Cyberpunk HUD, 24h + seconds, Arasaka palette rules.'
+}
 if ($LogPath) { Stop-Transcript | Out-Null }
