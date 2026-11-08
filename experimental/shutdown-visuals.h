@@ -2,9 +2,9 @@
 #include <string_view>
 inline const wchar_t* ArasakaStatus(std::wstring_view status) {
     if (status == L"Завершение работы" || status == L"Shutting down")
-        return L"ARASAKA // ОТКЛЮЧЕНИЕ СИСТЕМЫ";
+        return L"";
     if (status == L"Перезагрузка" || status == L"Restarting")
-        return L"ARASAKA // ПЕРЕЗАПУСК СИСТЕМЫ";
+        return L"";
     return nullptr;
 }
 inline constexpr wchar_t ArasakaShutdownTemplate[] = LR"xaml(
