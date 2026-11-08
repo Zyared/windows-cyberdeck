@@ -198,6 +198,16 @@ $notify = @(
   @('ActionCenter.FlexibleItemView', @('CornerRadius=0'))
 )
 
+# Quick Settings controls have their own checked states and slider templates.
+$notify += @(
+ @('ControlCenter.PaginatedToggleButton > ContentPresenter#ContentPresenter@CommonStates', @('CornerRadius=0','Background@Normal=#151016','Background@PointerOver=#35131D','Background@Checked=#ED2438','Background@CheckedPointerOver=#FF4559','Background@CheckedPressed=#A7192C','BorderBrush=#6B1828','BorderThickness=1')),
+ @('QuickActions.AccessibleToggleButton > ContentPresenter#ContentPresenter@CommonStates', @('Background@Checked=#ED2438','Background@CheckedPointerOver=#FF4559','CornerRadius=0')),
+ @('Rectangle#HorizontalDecreaseRect', @('Fill=#ED2438')),
+ @('Rectangle#HorizontalTrackRect', @('Fill=#391820')),
+ @('Thumb#HorizontalThumb > Border > Ellipse#SliderInnerThumb', @('Fill=#ED2438')),
+ @('Thumb#HorizontalThumb > Border', @('Background=#ED2438','BorderBrush=#FF5C68'))
+)
+
 # The Settings app: black page and one neutral colour for every card, so nothing clashes. The home page is React Native, so it has its own card target.
 $Card = '#101013'
 $cardStyle = @("Background=$Card", 'CornerRadius=0')

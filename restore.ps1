@@ -1,4 +1,4 @@
-﻿# Puts back the appearance saved by apply.ps1.
+# Puts back the appearance saved by apply.ps1.
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'common.ps1')
 . (Join-Path $PSScriptRoot 'detect.ps1')
@@ -28,6 +28,7 @@ foreach ($n in 'Lively', 'Rainmeter') { Remove-ItemProperty 'HKCU:\Software\Micr
 Remove-Item (Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\Startup\Rainmeter.lnk') -ErrorAction SilentlyContinue
 if (Test-Path (Join-Path $BackupDir 'wallpaper-engine-config.json')) { & (Join-Path $PSScriptRoot 'apply-wallpaper-engine.ps1') -Undo }
 Invoke-WindhawkSettings '-Off'
+if (Test-Path (Join-Path $PSScriptRoot 'repair-shell-icons.ps1')) { Start-Process powershell -Verb RunAs -WindowStyle Hidden -Wait -ArgumentList ('-NoProfile -ExecutionPolicy Bypass -File '+[char]34+(Join-Path $PSScriptRoot 'repair-shell-icons.ps1')+[char]34+' -Undo') }
 & (Join-Path $PSScriptRoot 'apply-icons.ps1') -Undo
 
 # Values that did not exist before must go away too, because a .reg import only adds and overwrites.
