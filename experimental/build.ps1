@@ -15,7 +15,7 @@ $compilerArgs = @('-std=c++23', '-O2', '-shared', '-ffp-exception-behavior=maytr
     '-mguard=cf-nochecks', '-DUNICODE', '-D_UNICODE', '-DWINVER=0x0A00',
     '-D_WIN32_WINNT=0x0A00', '-D_WIN32_IE=0x0A00', '-DNTDDI_VERSION=0x0A000008',
     '-D__USE_MINGW_ANSI_STDIO=0', '-DWH_MOD', '-DWH_MOD_ID=L"arasaka-logon-styler"',
-    '-DWH_MOD_VERSION=L"0.1.0"', '-DWH_WINDHAWK_VERSION=0x01070300',
+    '-DWH_MOD_VERSION=L"0.1.1"', '-DWH_WINDHAWK_VERSION=0x01070300',
     '-include', 'windhawk_api.h', '-target', 'x86_64-w64-mingw32',
     '-Wl,--export-all-symbols', $source, $library, '-luser32', '-lole32',
     '-loleaut32', '-lruntimeobject', '-o', $output)

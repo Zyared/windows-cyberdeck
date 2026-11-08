@@ -12,7 +12,7 @@ Only a typed `PasswordBox` below that exact named view is considered. These name
 
 A thread-specific `WH_CALLWNDPROC` hook handles only this mod's registered message, sent synchronously once per second. All XAML access and ordinary restoration happen on the UI thread. Each traversal has limits of 1,024 visited nodes, depth 40, 1,024 queued nodes, and a 15 ms deadline checked between nodes. A single Windows API call is not preemptible, so 15 ms is not a hard runtime guarantee. At most 64 property records are retained. Existing bindings are skipped. Prior local values are saved; unset values are restored with `ClearValue`. Restoration skips properties subsequently changed by another component. No authentication APIs are hooked.
 
-Unload requests a UI-thread restoration and waits for the worker to finish before removing the hook. A hung LogonUI thread can consequently block unload. If unload runs on the UI thread while the worker synchronously sends to that thread, the join can also deadlock. This is an unresolved release blocker, not merely a cosmetic limitation; there is intentionally no unsafe forced unload while a callback might execute. If the window has already been destroyed, there is no remaining visible UI to restore. Transient template changes, animations, and unknown Windows builds remain untested. Settings changes request a full mod reload.
+Unload signals cancellation, then joins the worker with MsgWaitForMultipleObjectsEx and PeekMessage restricted to QS_SENDMESSAGE. This services synchronous UI calls even when unload runs on the receiving UI thread, breaking the former worker/UI join cycle. Posted input and timers are not dispatched by this join. The worker restores properties and removes its hook before exiting. A genuinely unresponsive UI thread or a stuck XAML API can still block completion; there is intentionally no timeout followed by unsafe forced unload. Reentrant unload from inside an active styling callback and live LogonUI hook teardown have not been validated. If the window has already been destroyed, there is no remaining visible UI to restore. Transient template changes, animations, and unknown Windows builds remain untested. Settings changes request a full mod reload.
 
 ## Build without installing
 
@@ -26,5 +26,25 @@ Defaults target Windhawk 1.7.3 in `C:\Program Files\Windhawk`; use `-WindhawkRoo
 
 ## Required validation before distribution
 
-First resolve the synchronous-dispatch/unload lifecycle blocker above. Use a disposable Windows VM with a snapshot and an independent recovery route. A developer-only build can be compiled with `-VmResearchOnly` (defines `ARASAKA_VM_RESEARCH=1`); this does not fix the blocker and must not be used on a daily-use machine. Ordinary source imported into Windhawk remains gated. Follow Windhawk documentation for LogonUI exclusions; this repository does not automate enabling injection into it. First verify diagnostic mode finds the intended control without changing sign-in. Only then enable appearance changes and verify password, PIN, Hello fallback, multiple users, accessibility, high contrast, focus/hover/error states, DPI, repeated lock/unlock, settings reload, and disable/unload restoring the prior appearance. Validate the hook and worker teardown under slow/unresponsive UI conditions. Until these checks pass, retain the prototype label and keep it out of the portable installer.
+The former synchronous-dispatch/UI-join cycle is covered by a native regression test without using LogonUI. Full integration validation is still required; use an isolated Windows test environment with an independent recovery route. A developer-only build can be compiled with `-VmResearchOnly` (defines `ARASAKA_VM_RESEARCH=1`); this bypasses the integration-validation gate and is not a claim of production readiness. Ordinary source imported into Windhawk remains gated. Follow Windhawk documentation for LogonUI exclusions; this repository does not automate enabling injection into it. First verify diagnostic mode finds the intended control without changing sign-in. Only then enable appearance changes and verify password, PIN, Hello fallback, multiple users, accessibility, high contrast, focus/hover/error states, DPI, repeated lock/unlock, settings reload, and disable/unload restoring the prior appearance. Validate the hook and worker teardown under slow/unresponsive UI conditions. Until these checks pass, retain the prototype label and keep it out of the portable installer.
 
+
+## Native join regression (0.1.1)
+
+`test-ui-thread-join.cpp` includes the same `ui-thread-join.h` used by the mod.
+It uses a message-only window in its own process, never LogonUI. It confirms the
+old non-pumping wait times out with the sender blocked, then exercises 100 joins,
+a delayed handler, two sequential sends (scan/restoration), preservation of posted
+messages, and joining a worker after the window is destroyed. A 15-second watchdog
+terminates only the test process on a regression. This tests the join primitive,
+not XAML property restoration or actual Windhawk DLL unload.
+
+```powershell
+& 'C:\Program Files\Windhawk\Compiler\bin\clang++.exe' -std=c++23 -O2 -target x86_64-w64-mingw32 .\experimental\test-ui-thread-join.cpp -luser32 -o .\experimental\build\test-ui-thread-join.exe
+& .\experimental\build\test-ui-thread-join.exe
+```
+
+Run `build.ps1` first to create the build directory. Keep the adjacent header with
+the source when compiling; importing the single cpp into an editor is insufficient.
+The join follows the Windows requirement to service messages on window-owning
+threads: [Microsoft documentation](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-msgwaitformultipleobjectsex).

@@ -2,7 +2,7 @@
 // @id              arasaka-logon-styler
 // @name            Arasaka Logon Styler (experimental)
 // @description     Diagnostic-first, appearance-only PasswordBox prototype. Not runtime validated.
-// @version         0.1.0
+// @version         0.1.1
 // @author          Windows Cyberdeck contributors
 // @include         LogonUI.exe
 // @architecture    x86-64
@@ -28,6 +28,7 @@ lock-screen-live-wallpaper (GPL-3.0), ramensoftware/windhawk-mods.
 // ==/WindhawkModSettings==
 
 #include <windows.h>
+#include "ui-thread-join.h"
 #ifndef ARASAKA_VM_RESEARCH
 #define ARASAKA_VM_RESEARCH 0
 #endif
@@ -53,6 +54,7 @@ HWND target = nullptr;
 HHOOK hook = nullptr;
 UINT privateMessage = 0;
 bool styling = false;
+std::atomic<bool> stopping{false};
 int lastMatches = -1;
 struct Saved {
     weak_ref<DependencyObject> object;
@@ -91,6 +93,7 @@ void SetAppearance(PasswordBox const& box, DependencyProperty const& property,
 }
 
 void Scan() {
+    if (stopping.load()) return;
     auto window = Window::Current();
     if (!window || !window.Content()) return;
     struct Entry { DependencyObject node; unsigned depth; bool credentialView; };
@@ -98,7 +101,7 @@ void Scan() {
     unsigned visited = 0;
     int matches = 0;
     auto deadline = GetTickCount64() + 15;
-    while (!pending.empty() && visited++ < 1024 && GetTickCount64() < deadline) {
+    while (!stopping.load() && !pending.empty() && visited++ < 1024 && GetTickCount64() < deadline) {
         auto entry = std::move(pending.back()); pending.pop_back();
         if (auto element = entry.node.try_as<FrameworkElement>()) {
             if (element.Name() == L"RequestCredentialUserControl") entry.credentialView = true;
@@ -149,9 +152,11 @@ BOOL CALLBACK FindWindow(HWND hwnd, LPARAM) {
 DWORD WINAPI Worker(void*) {
     // Discovery ends after 30 seconds. No injection or desktop switching here.
     for (unsigned i = 0; i < 150; ++i) {
+        if (WaitForSingleObject(stopEvent, 0) == WAIT_OBJECT_0) return 0;
         EnumWindows(FindWindow, 0);
         if (target || WaitForSingleObject(stopEvent, 200) == WAIT_OBJECT_0) break;
     }
+    if (WaitForSingleObject(stopEvent, 0) == WAIT_OBJECT_0) return 0;
     if (!target) { Wh_Log(L"LogonUI window not found"); return 0; }
     hook = SetWindowsHookExW(WH_CALLWNDPROC, MessageHook, nullptr, GetWindowThreadProcessId(target, nullptr));
     if (!hook) { Wh_Log(L"UI-thread hook unavailable"); return 0; }
@@ -167,13 +172,14 @@ DWORD WINAPI Worker(void*) {
 }
 
 BOOL Wh_ModInit() {
-    // Release gate: synchronous UI dispatch and worker joining have not been
-    // proven safe during LogonUI teardown. Ordinary builds must not activate.
+    // The join cycle has a native regression test. Real LogonUI teardown and
+    // XAML lifetime still require validation before ordinary builds activate.
     if (!ARASAKA_VM_RESEARCH) {
         Wh_Log(L"Prototype inactive: UI teardown validation is incomplete");
         return FALSE;
     }
     styling = Wh_GetIntSetting(L"enableStyling") != 0;
+    stopping.store(false);
     privateMessage = RegisterWindowMessageW(L"WindowsCyberdeck.ArasakaLogonStyler.0.1");
     stopEvent = CreateEventW(nullptr, TRUE, FALSE, nullptr);
     if (!privateMessage || !stopEvent) {
@@ -187,15 +193,23 @@ BOOL Wh_ModInit() {
 }
 
 void Wh_ModBeforeUninit() {
+    stopping.store(true);
     if (stopEvent) SetEvent(stopEvent);
-    // Must finish restoration before unloading code used by the UI callback.
-    // This can wait on a hung UI thread; do not force-unload the DLL.
-    if (worker) WaitForSingleObject(worker, INFINITE);
+    // Keep servicing sent UI calls until restoration and unhook have finished.
+    // A timeout/forced unload would leave a callback in unloaded code.
+    if (worker) {
+        while (JoinWorkerServicingSentMessages(worker) != WAIT_OBJECT_0) {
+            Wh_Log(L"Worker join failed (%lu); retaining module until worker exits", GetLastError());
+            Sleep(10);
+        }
+    }
 }
 
 void Wh_ModUninit() {
     if (worker) CloseHandle(worker);
     if (stopEvent) CloseHandle(stopEvent);
+    worker = nullptr;
+    stopEvent = nullptr;
     saved.clear();
 }
 
