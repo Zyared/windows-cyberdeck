@@ -33,6 +33,32 @@ $items = @(
   @("$cl\{1CF1260C-4DD0-4ebb-811F-33C572699FDE}\DefaultIcon", '(default)', 'music'),
   @("$cl\{A0953C92-50DC-43bf-BE83-3742FED03C9C}\DefaultIcon", '(default)', 'videos')
 )
+# Additional shell surfaces, both namespace views, physical and network drives.
+$more=@{
+ '{645FF040-5081-101B-9F08-00AA002F954E}'='recycle'
+ '{26EE0668-A00A-44D7-9371-BEB064C98683}'='settings'
+ '{21EC2020-3AEA-1069-A2DD-08002B30309D}'='settings'
+ '{2227A280-3AEA-1069-A2DE-08002B30309D}'='printer'
+ '{59031a47-3f72-44a7-89c5-5595fe6b30ee}'='home'
+ '{031E4825-7B94-4dc3-B131-E946B44C8DD5}'='documents'
+}
+foreach($id in $more.Keys){foreach($prefix in $cl,$ex){$items+=,@("$prefix\$id\DefaultIcon",'(default)',$more[$id])}}
+foreach($prefix in $cl,$ex){foreach($state in 'empty','full'){
+ $items+=,@("$prefix\{645FF040-5081-101B-9F08-00AA002F954E}\DefaultIcon",$state,$(if($state -eq 'full'){'recyclefull'}else{'recycle'}))
+}}
+foreach($kind in @(@('Folder','folder'),@('Directory','folder'),@('Drive','drive'),@('Unknown','generic'))){
+ $items+=,@("HKCU:\Software\Classes\$($kind[0])\DefaultIcon",'(default)',$kind[1])
+}
+foreach($drive in Get-PSDrive -PSProvider FileSystem | Where-Object {$_.Name -match '^[A-Z]$'}){
+ $items+=,@("HKCU:\Software\Classes\Applications\Explorer.exe\Drives\$($drive.Name)\DefaultIcon",'(default)','drive')
+}
+# Mirror existing special-folder mappings into Explorer's per-user namespace too.
+foreach($item in @($items)){
+ if($item[0].StartsWith($cl+'\') -and $item[1] -eq '(default)'){
+  $items+=,@($item[0].Replace($cl,$ex),$item[1],$item[2])
+ }
+}
+$seen=@{}; $items=@(foreach($item in $items){$identity=$item[0]+'|'+$item[1];if(-not $seen.ContainsKey($identity)){$seen[$identity]=$true;,$item}})
 $dl = (Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders').'{374DE290-123F-4565-9164-39C4925E467B}'
 $folders = [ordered]@{
   desktop = [Environment]::GetFolderPath('DesktopDirectory'); downloads = $dl; documents = [Environment]::GetFolderPath('MyDocuments')

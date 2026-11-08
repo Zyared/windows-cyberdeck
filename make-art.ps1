@@ -32,26 +32,26 @@ function Draw-Scene($W, $H, [bool]$Lock, $Path) {
   for($x=0;$x -lt 1920;$x+=60){$g.DrawLine($line,$x,0,$x,1080)}
   for($y=0;$y -lt 1080;$y+=60){$g.DrawLine($line,0,$y,1920,$y)}
   Box 0 0 1920 6 '#ed2438'; Box 0 1000 1920 80 '#101014'
-  Box 340 100 4 830 '#ed2438'
-  Txt 'ARASAKA CORPORATION' 22 380 100 '#ed2438'
-  Txt 'NIGHT CITY  /  NORTH AMERICAN DIVISION' 17 380 137 '#92929c'
+  Box 40 100 4 830 '#ed2438'
+  Txt 'ARASAKA CORPORATION' 22 70 100 '#ed2438'
+  Txt 'NIGHT CITY  /  NORTH AMERICAN DIVISION' 17 70 137 '#92929c'
   Txt '荒坂' 76 1520 110 '#ed2438'
   # Three-branched Arasaka emblem; native geometry stays crisp at any resolution.
   $red=Brush ([Drawing.ColorTranslator]::FromHtml('#ed2438'))
   $pen=New-Object Drawing.Pen([Drawing.ColorTranslator]::FromHtml('#ed2438'),20)
-  $g.DrawLine($pen,1180,400,1180,630); $g.DrawLine($pen,1180,540,1040,440); $g.DrawLine($pen,1180,540,1320,440)
-  foreach($xy in @(@(1135,310),@(995,370),@(1275,370))){$g.FillEllipse($red,[single]$xy[0],[single]$xy[1],90,90)}
-  Txt 'ARASAKA' 136 810 650 '#ed2438'
-  Txt 'SECURE YOUR FUTURE.' 28 905 810 '#dbdbe0'
-  Box 380 310 295 4 '#ed2438'
-  Txt 'CORPORATE' 36 380 345 '#dbdbe0'; Txt 'ACCESS TERMINAL' 31 380 390 '#dbdbe0'
-  Txt '01  /  PERSONNEL INTERFACE' 16 380 465 '#92929c'
-  Txt '02  /  NIGHT CITY NETWORK' 16 380 505 '#92929c'
-  Txt '03  /  COUNTERINTELLIGENCE' 16 380 545 '#92929c'
-  Box 380 650 295 100 '#251017'
-  Txt 'RESTRICTED' 30 398 664 '#ed2438'
-  Txt 'AUTHORIZED PERSONNEL ONLY' 15 398 714 '#dbdbe0'
-  Txt 'CYBERPUNK 2077  /  ARASAKA SYSTEMS' 17 380 942 '#92929c'
+  $g.DrawLine($pen,1100,400,1100,630); $g.DrawLine($pen,1100,540,960,440); $g.DrawLine($pen,1100,540,1240,440)
+  foreach($xy in @(@(1055,310),@(915,370),@(1195,370))){$g.FillEllipse($red,[single]$xy[0],[single]$xy[1],90,90)}
+  Txt 'ARASAKA' 136 730 650 '#ed2438'
+  Txt 'SECURE YOUR FUTURE.' 28 825 810 '#dbdbe0'
+  Box 70 310 295 4 '#ed2438'
+  Txt 'CORPORATE' 36 70 345 '#dbdbe0'; Txt 'ACCESS TERMINAL' 31 70 390 '#dbdbe0'
+  Txt '01  /  PERSONNEL INTERFACE' 16 70 465 '#92929c'
+  Txt '02  /  NIGHT CITY NETWORK' 16 70 505 '#92929c'
+  Txt '03  /  COUNTERINTELLIGENCE' 16 70 545 '#92929c'
+  Box 70 650 295 100 '#251017'
+  Txt 'RESTRICTED' 30 88 664 '#ed2438'
+  Txt 'AUTHORIZED PERSONNEL ONLY' 15 88 714 '#dbdbe0'
+  Txt 'CYBERPUNK 2077  /  ARASAKA SYSTEMS' 17 70 942 '#92929c'
   Txt 'PROPERTY OF ARASAKA CORPORATION' 18 40 1023 '#ed2438'
   Txt 'NC-01     //     CORPORATE NETWORK     //     2077' 17 1250 1023 '#92929c'
   $g.Dispose(); $bmp.Save($Path,[Drawing.Imaging.ImageFormat]::Png); $bmp.Dispose()

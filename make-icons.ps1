@@ -23,6 +23,14 @@ function Outline($g, $c, $w, [double[]]$xy) {
 function Line($g, $c, $w, $x1, $y1, $x2, $y2) { $g.DrawLine((PenOf $c $w), [single]$x1, [single]$y1, [single]$x2, [single]$y2) }
 
 # All icons are drawn on a 32-unit grid and scaled, so they stay vector-sharp at each size.
+function Arasaka-Mark($g,$x,$y,$scale,$color) {
+  $state=$g.Save(); $g.TranslateTransform([single]$x,[single]$y); $g.ScaleTransform([single]$scale,[single]$scale)
+  Line $g $color 2.4 16 6 16 30
+  Line $g $color 2.4 16 21 5 12
+  Line $g $color 2.4 16 21 27 12
+  foreach($xy in @(@(12,1),@(1,7),@(23,7))){$g.FillEllipse((Brush $color),[single]$xy[0],[single]$xy[1],8,8)}
+  $g.Restore($state)
+}
 function FolderBase($g) {
   Poly $g $colD @(2,6, 12,6, 15,9, 30,9, 30,14, 2,14)
   $rect = New-Object Drawing.RectangleF(2, 12, 28, 18)
@@ -113,6 +121,22 @@ $painters = @{
   }
 }
 
+$painters['generic']={param($g)
+  Poly $g $colP @(5,2,22,2,28,8,28,30,5,30)
+  Outline $g $colY 1.5 @(5,2,22,2,28,8,28,30,5,30)
+  Arasaka-Mark $g 8 9 0.55 $colY
+}
+$painters['settings']={param($g)
+  $g.DrawEllipse((PenOf $colY 2),4,4,24,24)
+  Arasaka-Mark $g 7 5 0.56 $colY
+}
+$painters['printer']={param($g)
+  Outline $g $colY 1.7 @(3,11,29,11,29,24,3,24)
+  Poly $g $colP @(8,3,24,3,24,15,8,15)
+  Outline $g $colY 1.5 @(8,3,24,3,24,15,8,15)
+  Poly $g $colY @(9,21,23,21,23,30,9,30)
+}
+
 function Write-Ico($path, [scriptblock]$painter) {
   $sizes = 16, 20, 24, 32, 40, 48, 64, 256
   $blobs = foreach ($size in $sizes) {
@@ -164,6 +188,14 @@ function Write-Png($path, $size, [scriptblock]$painter) {
   $bmp.Dispose()
 }
 
+foreach($name in @($painters.Keys)) {
+  $basePainter=$painters[$name]
+  $painters[$name]={param($g)
+    & $basePainter $g
+    $g.FillRectangle((Brush $colK),20,19,12,13)
+    Arasaka-Mark $g 21 20 0.33 $colY
+  }.GetNewClosure()
+}
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
 foreach ($name in $painters.Keys) { Write-Ico (Join-Path $OutDir "$name.ico") $painters[$name] }
 
