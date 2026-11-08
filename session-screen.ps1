@@ -1,4 +1,4 @@
-# User-session animation. This does not replace UEFI, Winlogon or the Windows shutdown screen.
+﻿# User-session animation. This does not replace UEFI, Winlogon or the Windows shutdown screen.
 param([ValidateSet('Startup','Shutdown','Restart')][string]$Mode='Startup',[switch]$Preview)
 $ErrorActionPreference='Stop'
 Add-Type -AssemblyName PresentationFramework

@@ -1,4 +1,4 @@
-# Applies the icon set per user, or puts the previous icons back with -Undo.
+﻿# Applies the icon set per user, or puts the previous icons back with -Undo.
 # The folder and fixed-drive icons that need HKLM are handled in windhawk-settings.ps1.
 param([switch]$Undo)
 $ErrorActionPreference = 'Stop'
@@ -60,9 +60,18 @@ foreach($item in @($items)){
 }
 $seen=@{}; $items=@(foreach($item in $items){$identity=$item[0]+'|'+$item[1];if(-not $seen.ContainsKey($identity)){$seen[$identity]=$true;,$item}})
 $dl = (Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders').'{374DE290-123F-4565-9164-39C4925E467B}'
+if (-not $dl) { $dl = Join-Path $env:USERPROFILE 'Downloads' }
 $folders = [ordered]@{
   desktop = [Environment]::GetFolderPath('DesktopDirectory'); downloads = $dl; documents = [Environment]::GetFolderPath('MyDocuments')
   pictures = [Environment]::GetFolderPath('MyPictures'); music = [Environment]::GetFolderPath('MyMusic'); videos = [Environment]::GetFolderPath('MyVideos')
+}
+
+# Fresh profiles and redirected user folders may not have every known folder.
+foreach ($folderName in @($folders.Keys)) {
+  if (-not $folders[$folderName] -or -not (Test-Path -LiteralPath $folders[$folderName] -PathType Container)) {
+    Write-Host "Folder is not present, skipping desktop.ini: $folderName"
+    $folders.Remove($folderName)
+  }
 }
 
 function Get-Val($key, $name) {

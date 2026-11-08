@@ -1,4 +1,4 @@
-# Draws the CYBER//DECK icon set as real multi-size .ico files, plus two PNGs for the taskbar. Nothing is downloaded.
+﻿# Draws the CYBER//DECK icon set as real multi-size .ico files, plus two PNGs for the taskbar. Nothing is downloaded.
 param([Parameter(Mandatory)][string]$OutDir)
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
@@ -137,6 +137,11 @@ $painters['printer']={param($g)
   Poly $g $colY @(9,21,23,21,23,30,9,30)
 }
 
+function Draw-Icon($g, [scriptblock]$painter) {
+  & $painter $g
+  $g.FillRectangle((Brush $colK),20,19,12,13)
+  Arasaka-Mark $g 21 20 0.33 $colY
+}
 function Write-Ico($path, [scriptblock]$painter) {
   $sizes = 16, 20, 24, 32, 40, 48, 64, 256
   $blobs = foreach ($size in $sizes) {
@@ -144,7 +149,7 @@ function Write-Ico($path, [scriptblock]$painter) {
     $g = [Drawing.Graphics]::FromImage($bmp)
     $g.SmoothingMode = 'AntiAlias'
     $g.ScaleTransform([single]($size / 32.0), [single]($size / 32.0))
-    & $painter $g
+    Draw-Icon $g $painter
     $g.Dispose()
     $ms = New-Object IO.MemoryStream
     if ($size -ge 256) {
@@ -188,14 +193,7 @@ function Write-Png($path, $size, [scriptblock]$painter) {
   $bmp.Dispose()
 }
 
-foreach($name in @($painters.Keys)) {
-  $basePainter=$painters[$name]
-  $painters[$name]={param($g)
-    & $basePainter $g
-    $g.FillRectangle((Brush $colK),20,19,12,13)
-    Arasaka-Mark $g 21 20 0.33 $colY
-  }.GetNewClosure()
-}
+
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
 foreach ($name in $painters.Keys) { Write-Ico (Join-Path $OutDir "$name.ico") $painters[$name] }
 
@@ -220,9 +218,9 @@ $sg.Clear([Drawing.Color]::FromArgb(18, 18, 14))
 $sg.SmoothingMode = 'AntiAlias'
 $i = 0
 foreach ($n in $names) {
-  $st = $sg.Save(); $sg.TranslateTransform([single](10 + $i * 76), 8); $sg.ScaleTransform(2, 2); & $painters[$n] $sg; $sg.Restore($st)
-  $st = $sg.Save(); $sg.TranslateTransform([single](10 + $i * 76), 84); & $painters[$n] $sg; $sg.Restore($st)
-  $st = $sg.Save(); $sg.TranslateTransform([single](50 + $i * 76), 90); $sg.ScaleTransform(0.5, 0.5); & $painters[$n] $sg; $sg.Restore($st)
+  $st = $sg.Save(); $sg.TranslateTransform([single](10 + $i * 76), 8); $sg.ScaleTransform(2, 2); Draw-Icon $sg $painters[$n]; $sg.Restore($st)
+  $st = $sg.Save(); $sg.TranslateTransform([single](10 + $i * 76), 84); Draw-Icon $sg $painters[$n]; $sg.Restore($st)
+  $st = $sg.Save(); $sg.TranslateTransform([single](50 + $i * 76), 90); $sg.ScaleTransform(0.5, 0.5); Draw-Icon $sg $painters[$n]; $sg.Restore($st)
   $sg.DrawString($n.Substring(0, [Math]::Min(9, $n.Length)), (New-Object Drawing.Font('Consolas', 9)), (Brush $colT), [single](8 + $i * 76), 130)
   $i++
 }

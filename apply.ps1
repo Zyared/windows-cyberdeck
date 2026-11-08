@@ -1,4 +1,4 @@
-# Applies the CYBER//DECK look to Windows. Per-user settings only: no administrator rights, no system files touched.
+﻿# Applies the CYBER//DECK look to Windows. Per-user settings only: no administrator rights, no system files touched.
 $ErrorActionPreference = 'Stop'
 $src = $PSScriptRoot
 . (Join-Path $src 'common.ps1')
@@ -29,7 +29,7 @@ foreach ($b in $RegBackups) {
 }
 
 # 2. Keep everything needed later outside the session folder.
-foreach ($f in 'common.ps1', 'restore.ps1', 'apply.ps1', 'apply-live.ps1', 'apply-wallpaper-engine.ps1', 'apply-icons.ps1', 'make-art.ps1', 'make-icons.ps1', 'windhawk-settings.ps1', 'session-screen.ps1', 'install-session.ps1', 'live', 'rainmeter') { if ($src -ne $Home2) { Copy-Item (Join-Path $src $f) $Home2 -Recurse -Force } }
+foreach ($f in 'common.ps1', 'detect.ps1', 'install.ps1', 'Install-Arasaka.cmd', 'restore.ps1', 'apply.ps1', 'apply-live.ps1', 'apply-wallpaper-engine.ps1', 'apply-icons.ps1', 'make-art.ps1', 'make-icons.ps1', 'windhawk-settings.ps1', 'session-screen.ps1', 'install-session.ps1', 'live', 'rainmeter') { if ($src -ne $Home2) { Copy-Item (Join-Path $src $f) $Home2 -Recurse -Force } }
 $bat = '@echo off' + "`r`n" + 'powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0restore.ps1"' + "`r`n" + 'pause' + "`r`n"
 [IO.File]::WriteAllText((Join-Path $Home2 'Restore-Windows-Look.bat'), $bat)
 
@@ -110,4 +110,7 @@ if ($wt) {
 & (Join-Path $Home2 'apply-icons.ps1')
 & (Join-Path $Home2 'install-session.ps1')
 Refresh-Appearance
+# Explorer may rewrite shell icon entries during startup.
+Start-Sleep 3
+& (Join-Path $Home2 'apply-icons.ps1')
 Write-Host "Done. To undo: $Home2\Restore-Windows-Look.bat"

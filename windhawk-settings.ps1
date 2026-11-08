@@ -1,7 +1,13 @@
 ﻿# Writes the CYBER//DECK styles into the Windhawk mod settings and the system folder icons. Needs administrator rights (HKLM).
 # -Off disables the mods and removes those icons, -On enables the mods again. Styles stay stored either way.
-param([switch]$Off, [switch]$On, [switch]$WithTranslucent, [switch]$NoTray)
+param([switch]$Off, [switch]$On, [switch]$WithTranslucent, [switch]$NoTray, [string]$LogPath)
 $ErrorActionPreference = 'Stop'
+if ($LogPath) { Start-Transcript -Path $LogPath -Force | Out-Null }
+trap {
+  Write-Host ($_ | Out-String)
+  if ($LogPath) { Stop-Transcript | Out-Null }
+  exit 1
+}
 $root = 'HKLM:\SOFTWARE\Windhawk\Engine\Mods'
 $ids = 'windows-11-start-menu-styler', 'windows-11-file-explorer-styler', 'windows-11-taskbar-styler', 'translucent-windows', 'local@translucent-windows-fork', 'windows-11-notification-center-styler', 'windows-11-settings-styler'
 $home2 = Join-Path $env:USERPROFILE 'CyberDeck'
@@ -15,6 +21,7 @@ if ($Off -or $On) {
   if ($Off) { foreach ($id in $ids[3..4]) { if (Test-Path "$root\$id") { Set-ItemProperty "$root\$id" Disabled 1 -Type DWord; Stamp $id } } }
   if ($Off -and (Test-Path $shellIcons)) { Remove-Item $shellIcons -Recurse -Force }
   Write-Host "Mods disabled: $([bool]$Off)"
+  if ($LogPath) { Stop-Transcript | Out-Null }
   return
 }
 
@@ -190,9 +197,9 @@ $settingsApp = @(
 
 function Write-Mod($id, $styles, $vars) {
   $key = "$root\$id\Settings"
-  if (-not (Test-Path $key)) { throw "Mod is not installed: $id" }
+  if (-not (Test-Path $key)) { Write-Warning "Mod is not installed, skipping: $id"; return }
   foreach ($v in (Get-Item $key).Property) {
-    if ($v -match '^(controlStyles|themeResourceVariables)\[') { Remove-ItemProperty $key -Name $v }
+    if ($v -match '^(controlStyles|themeResourceVariables)\[') { $writeKey = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey(($key -replace '^HKLM:\\', ''), $true); try { $writeKey.DeleteValue($v, $false) } finally { $writeKey.Close() } }
   }
   for ($i = 0; $i -lt $styles.Count; $i++) {
     Set-ItemProperty $key "controlStyles[$i].target" $styles[$i][0] -Type String
@@ -212,16 +219,20 @@ if (-not (Test-Path $colors)) { & cmd.exe /c "reg export `"HKCU\Control Panel\Co
 Write-Mod $ids[0] $start $startVars
 # Search results are a web page inside SearchHost, so they take CSS.
 $sk = "$root\$($ids[0])\Settings"
+if (Test-Path -LiteralPath $sk) {
 Set-ItemProperty $sk 'webContentStyles[0].target' 'body' -Type String
 Set-ItemProperty $sk 'webContentStyles[0].styles[0]' 'background: transparent !important' -Type String
 Set-ItemProperty $sk 'webContentStyles[0].styles[1]' 'color: #DBDBE0 !important' -Type String
 Stamp $ids[0]
+}
 Write-Mod $ids[1] $explorer $explorerVars
 # The window backdrop comes from Translucent Windows when it is installed, because only it takes a custom tint.
 # Without it, Acrylic is the best frosted backdrop the classic file list can sit on.
 $translucent = $ids[3..4] | Where-Object { Test-Path "$root\$_" } | Select-Object -First 1
-Set-ItemProperty "$root\$($ids[1])\Settings" backgroundTranslucentEffect $(if ($translucent -and $WithTranslucent) { 'none' } else { 'mica' }) -Type String
-Stamp $ids[1]
+if (Test-Path "$root\$($ids[1])\Settings") {
+  Set-ItemProperty "$root\$($ids[1])\Settings" backgroundTranslucentEffect $(if ($translucent -and $WithTranslucent) { 'none' } else { 'mica' }) -Type String
+  Stamp $ids[1]
+}
 # Off unless asked for: it stays out of Explorer until it has been tested on its own.
 if ($translucent -and -not $WithTranslucent) { Set-ItemProperty "$root\$translucent" Include 'explorer.exe' -Type String; Set-ItemProperty "$root\$translucent" Disabled 1 -Type DWord; Stamp $translucent }
 if ($translucent -and $WithTranslucent) {
@@ -248,3 +259,4 @@ Set-ItemProperty $shellIcons '3' ((Join-Path $icons 'folder.ico') + ',0') -Type 
 Set-ItemProperty $shellIcons '4' ((Join-Path $icons 'folderopen.ico') + ',0') -Type String
 Set-ItemProperty $shellIcons '8' ((Join-Path $icons 'drive.ico') + ',0') -Type String
 Write-Host 'Shell icons set.'
+if ($LogPath) { Stop-Transcript | Out-Null }

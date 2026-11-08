@@ -1,4 +1,4 @@
-param([switch]$Undo)
+﻿param([switch]$Undo)
 $ErrorActionPreference='Stop'
 $root=Join-Path $env:USERPROFILE 'CyberDeck'
 $startup=[Environment]::GetFolderPath('Startup')

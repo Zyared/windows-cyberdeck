@@ -1,15 +1,16 @@
-# Puts back the appearance saved by apply.ps1.
+﻿# Puts back the appearance saved by apply.ps1.
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'common.ps1')
+. (Join-Path $PSScriptRoot 'detect.ps1')
 if (-not (Test-Path (Join-Path $BackupDir 'complete.txt'))) { throw "No backup found in $BackupDir" }
 
 & (Join-Path $PSScriptRoot 'install-session.ps1') -Undo
 
 # Animated layer first, otherwise the live wallpaper would keep covering the restored picture.
 # The two programs stay installed, they just stop starting with Windows.
-$lively = 'C:\Program Files\Lively Wallpaper\Lively.exe'
-$rm = 'C:\Program Files\Rainmeter\Rainmeter.exe'
-if (Get-Process Lively -ErrorAction SilentlyContinue) {
+$lively = Find-ArasakaProgram 'Lively'
+$rm = Find-ArasakaProgram 'Rainmeter'
+if ($lively -and (Get-Process Lively -ErrorAction SilentlyContinue)) {
   $p = Start-Process $lively -ArgumentList @('closewp', '--monitor', '-1') -PassThru -WindowStyle Hidden
   $p.WaitForExit(10000) | Out-Null
   Start-Sleep 2
@@ -18,7 +19,7 @@ if (Get-Process Lively -ErrorAction SilentlyContinue) {
   Start-Sleep 3
   Get-Process Lively, Lively.UI.WinUI -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
 }
-if (Get-Process Rainmeter -ErrorAction SilentlyContinue) {
+if ($rm -and (Get-Process Rainmeter -ErrorAction SilentlyContinue)) {
   & $rm '!Quit'
   Start-Sleep 2
   Get-Process Rainmeter -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue

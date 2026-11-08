@@ -1,4 +1,4 @@
-# Generated on the machine by make-art.ps1 and make-icons.ps1
+# Generated locally; never include personal backups or installation logs.
 *.png
 *.jpg
 *.cur
@@ -6,3 +6,4 @@
 live/data.js
 backup/
 *.log
+test-output/

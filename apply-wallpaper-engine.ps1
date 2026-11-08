@@ -1,23 +1,11 @@
-# Runs the live wallpaper in Wallpaper Engine instead of Lively. Run after apply.ps1, or through apply-live.ps1 -Wallpaper WallpaperEngine.
+﻿# Runs the live wallpaper in Wallpaper Engine instead of Lively. Run after apply.ps1, or through apply-live.ps1 -Wallpaper WallpaperEngine.
 # -Undo puts back the Wallpaper Engine settings saved on the first run.
 param([switch]$Undo)
 $ErrorActionPreference = 'Stop'
 $root = Join-Path $env:USERPROFILE 'CyberDeck'
 $bak = Join-Path $root 'backup\wallpaper-engine-config.json'
 
-# Wallpaper Engine lives in whichever Steam library it was installed to.
-function Get-WallpaperEngineDir {
-  $steam = (Get-ItemProperty 'HKCU:\Software\Valve\Steam' -ErrorAction SilentlyContinue).SteamPath
-  if (-not $steam) { return $null }
-  $libraries = @($steam)
-  $vdf = Join-Path $steam 'steamapps\libraryfolders.vdf'
-  if (Test-Path $vdf) { $libraries += [regex]::Matches((Get-Content $vdf -Raw), '"path"\s+"([^"]+)"') | ForEach-Object { $_.Groups[1].Value -replace '\\\\', '\' } }
-  foreach ($l in $libraries) {
-    $dir = Join-Path $l 'steamapps\common\wallpaper_engine'
-    if (Test-Path (Join-Path $dir 'wallpaper64.exe')) { return $dir }
-  }
-  return $null
-}
+. (Join-Path $PSScriptRoot 'detect.ps1')
 
 $we = Get-WallpaperEngineDir
 if (-not $we) { throw 'Wallpaper Engine not found in the Steam libraries.' }

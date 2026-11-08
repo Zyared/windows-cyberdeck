@@ -1,4 +1,4 @@
-# Shared helpers: paths and the Win32 calls that make Windows pick up changes without signing out.
+﻿# Shared helpers: paths and the Win32 calls that make Windows pick up changes without signing out.
 # Outside AppData on purpose: a packaged app's AppData writes are invisible to Explorer and the rest of Windows.
 $Home2 = Join-Path $env:USERPROFILE 'CyberDeck'
 $BackupDir = Join-Path $Home2 'backup'
@@ -55,11 +55,10 @@ public static class CdNative {
 '@
 # Windhawk keeps its settings in HKLM, so this one step asks for administrator rights.
 function Invoke-WindhawkSettings([string]$Mode) {
-  if (-not (Test-Path 'HKLM:\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler')) { return }
-  $args2 = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-WindowStyle', 'Hidden', '-File', (Join-Path $Home2 'windhawk-settings.ps1'))
-  $args2 += $(if ($Mode) { $Mode } else { '-WithTranslucent' })
-  try { Start-Process powershell -Verb RunAs -Wait -ArgumentList $args2 }
-  catch { Write-Host "Windhawk step skipped, administrator rights were declined. Change the mods in the Windhawk window." }
+  if (-not (Test-Path 'HKLM:\SOFTWARE\Windhawk\Engine\Mods')) { return }
+  $args2 = '-NoProfile -ExecutionPolicy Bypass -File "' + (Join-Path $Home2 'windhawk-settings.ps1') + '" ' + $(if ($Mode) { $Mode } else { '-WithTranslucent' })
+  $process = Start-Process powershell -Verb RunAs -WindowStyle Hidden -Wait -PassThru -ArgumentList $args2
+  if ($process.ExitCode -ne 0) { throw "Windhawk settings failed (exit $($process.ExitCode))." }
 }
 function Refresh-Appearance {
   [CdNative]::ReloadCursors()
