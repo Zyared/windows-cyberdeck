@@ -24,11 +24,29 @@ constexpr wchar_t spinnerSymbol[] = L"?__abi_Windows_UI_Xaml_Controls_IDataTempl
 using StatusFn = HRESULT(WINAPI*)(void*, HSTRING*);
 using SpinnerFn = HRESULT(WINAPI*)(void*, void*, void*, void**);
 StatusFn originalStatus;
+StatusFn originalUserStatus;
+constexpr wchar_t userStatusSymbol[] = L"?__abi_LogonUX___IUserViewModelPublicNonVirtuals____abi_get_LogonStatus@?Q__IUserViewModelPublicNonVirtuals@LogonUX@@UserViewModel@2@UE$AAAJPEAPE$AAVString@Platform@@@Z";
 SpinnerFn originalSpinner;
 HMODULE logonModule;
 
 HRESULT WINAPI StatusHook(void* self, HSTRING* value) {
     HRESULT hr = originalStatus(self, value);
+    if (SUCCEEDED(hr) && value && *value) {
+        UINT32 length = 0;
+        const wchar_t* buffer = WindowsGetStringRawBuffer(*value, &length);
+        if (auto replacement = ArasakaStatus({buffer, length})) {
+            HSTRING custom = nullptr;
+            if (SUCCEEDED(WindowsCreateString(replacement, (UINT32)wcslen(replacement), &custom))) {
+                WindowsDeleteString(*value);
+                *value = custom;
+            }
+        }
+    }
+    return hr;
+}
+
+HRESULT WINAPI UserStatusHook(void* self, HSTRING* value) {
+    HRESULT hr = originalUserStatus(self, value);
     if (SUCCEEDED(hr) && value && *value) {
         UINT32 length = 0;
         const wchar_t* buffer = WindowsGetStringRawBuffer(*value, &length);
@@ -66,15 +84,17 @@ BOOL Wh_ModInit() {
     }
     void* status = nullptr;
     void* spinner = nullptr;
+    void* userStatus = nullptr;
     WH_FIND_SYMBOL_OPTIONS options{sizeof(options), nullptr, TRUE};
     WH_FIND_SYMBOL symbol{};
     HANDLE search = Wh_FindFirstSymbol(module, &options, &symbol);
     if (!search) return FALSE;
     do {
         if (!symbol.symbolDecorated) continue;
+        if (wcscmp(symbol.symbolDecorated, userStatusSymbol) == 0) userStatus = symbol.address;
         if (wcscmp(symbol.symbolDecorated, statusSymbol) == 0) status = symbol.address;
         if (wcscmp(symbol.symbolDecorated, spinnerSymbol) == 0) spinner = symbol.address;
-    } while ((!status || !spinner) && Wh_FindNextSymbol(search, &symbol));
+    } while ((!status || !spinner || !userStatus) && Wh_FindNextSymbol(search, &symbol));
     Wh_FindCloseSymbol(search);
     if (!status || !spinner) {
         Wh_Log(L"Exact shutdown ABI symbols missing; leaving system unchanged");
@@ -82,6 +102,7 @@ BOOL Wh_ModInit() {
     }
     if (!Wh_SetFunctionHook(status, (void*)StatusHook, (void**)&originalStatus) ||
         !Wh_SetFunctionHook(spinner, (void*)SpinnerHook, (void**)&originalSpinner)) return FALSE;
+    if (userStatus) Wh_SetFunctionHook(userStatus, (void*)UserStatusHook, (void**)&originalUserStatus);
     Wh_Log(L"Shutdown status and template hooks prepared");
     return TRUE;
 }
