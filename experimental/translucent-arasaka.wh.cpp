@@ -3207,6 +3207,15 @@ BOOL CThemeCache::CacheTrackBarPointedThumb(INT iPartId, INT iStateId, INT state
 
 BOOL PaintProgressBar(HDC hdc, INT iPartId, INT iStateId, LPCRECT pRect)
 {
+    // Capacity bars can request a fill with state 0; handle it explicitly.
+    if (iPartId == PP_FILL || iPartId == PP_FILLVERT || iPartId == PP_CHUNK || iPartId == PP_CHUNKVERT) {
+        COLORREF color = (iStateId == PBFS_PAUSED) ? RGB(237,166,48) : RGB(237,36,56);
+        HBRUSH brush = CreateSolidBrush(color);
+        if (!brush) return FALSE;
+        FillRect(hdc, pRect, brush);
+        DeleteObject(brush);
+        return TRUE;
+    }
     if (!g_d2dFactory)
         return FALSE;
     if (iPartId == PP_PULSEOVERLAY || iPartId == PP_MOVEOVERLAY || iPartId == PP_PULSEOVERLAYVERT || iPartId == PP_MOVEOVERLAYVERT)
