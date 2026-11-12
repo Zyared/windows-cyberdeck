@@ -1,5 +1,5 @@
 @echo off
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%USERPROFILE%\CyberDeck\Switch-Boot-Mode.ps1" -Mode Arasaka
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%USERPROFILE%\CyberDeck\Switch-Verified-Boot-Mode.ps1" -Mode Arasaka
 if errorlevel 1 (
  echo ERROR: Boot mode was not confirmed. Check CyberDeck backup boot-switch logs.
  pause
