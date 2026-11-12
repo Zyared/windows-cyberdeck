@@ -2062,7 +2062,7 @@ BOOL CThemeCache::CacheScrollbar(INT iPartId, INT iStateId, INT stateIndex)
     else if (iPartId == SBP_THUMBBTNHORZ)
         Rect = D2D1::RectF(0, height*0.25, width, height-height*0.25);
     
-    D2D1_COLOR_F Color = (iStateId == SCRBS_NORMAL) ? MyD2D1Color(128, 160, 160, 160) : MyD2D1Color(160, 224, 224, 224);
+    D2D1_COLOR_F Color = (iStateId == SCRBS_NORMAL) ? MyD2D1Color(180, 237, 36, 56) : MyD2D1Color(230, 255, 92, 104);
 
     Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> brush = nullptr;
     pRenderTarget->CreateSolidColorBrush(Color, &brush);
@@ -3452,7 +3452,7 @@ BOOL CThemeCache::CacheListItem(INT iPartId, INT iStateId, INT stateIndex)
     if (iPartId == THEMECLS_COMMONPROPS_PART)
     {
         D2D1_RECT_F rect = D2D1::RectF(x, y, width, height);
-        pRenderTarget->CreateSolidColorBrush(MyD2D1Color(96, 96, 96), &brush);
+        pRenderTarget->CreateSolidColorBrush(MyD2D1Color(48, 12, 18), &brush);
         pRenderTarget->BeginDraw();
         pRenderTarget->FillRectangle(&rect, brush.Get());
         auto hr = pRenderTarget->EndDraw();
@@ -3464,25 +3464,25 @@ BOOL CThemeCache::CacheListItem(INT iPartId, INT iStateId, INT stateIndex)
         switch (iStateId)
         {
             case LISS_NORMAL:
-                fillColor = MyD2D1Color(96, 144, 144, 144);
-                borderColor = IsAccentColorPossibleD2D(102, 206, 255, SystemAccentColorLight2);
+                fillColor = MyD2D1Color(96, 160, 24, 42);
+                borderColor = MyD2D1Color(237, 36, 56);
                 break;
             case LISS_HOT:
-                fillColor = MyD2D1Color(96, 144, 144, 144);
+                fillColor = MyD2D1Color(96, 160, 24, 42);
                 break;
             case LISS_SELECTED:
-                fillColor = MyD2D1Color(64, 144, 144, 144);
+                fillColor = MyD2D1Color(160, 160, 24, 42);
                 break;
             case LISS_DISABLED:
-                fillColor = MyD2D1Color(96, 144, 144, 144);
-                borderColor = IsAccentColorPossibleD2D(102, 206, 255, SystemAccentColorLight2);
+                fillColor = MyD2D1Color(96, 160, 24, 42);
+                borderColor = MyD2D1Color(237, 36, 56);
                 break;
             case LISS_SELECTEDNOTFOCUS:
-                fillColor = MyD2D1Color(32, 144, 144, 144);
+                fillColor = MyD2D1Color(112, 120, 18, 32);
                 break;
             case LISS_HOTSELECTED:
-                fillColor = MyD2D1Color(64, 144, 144, 144);
-                borderColor = IsAccentColorPossibleD2D(102, 206, 255, SystemAccentColorLight2);
+                fillColor = MyD2D1Color(160, 160, 24, 42);
+                borderColor = MyD2D1Color(237, 36, 56);
                 break;
         }
         
@@ -3630,16 +3630,16 @@ BOOL CThemeCache::CacheTreeViewButton(INT iPartId, INT iStateId, INT stateIndex)
     if (iPartId == THEMECLS_COMMONPROPS_PART)
     {
         Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> borderBrush;
-        pRenderTarget->CreateSolidColorBrush(MyD2D1Color(96, 96, 96), &borderBrush);
+        pRenderTarget->CreateSolidColorBrush(MyD2D1Color(48, 12, 18), &borderBrush);
         pRenderTarget->FillRectangle(D2D1::RectF(x, y, width, height), borderBrush.Get());
     }
     else if (iPartId == TVP_TREEITEM)
     {
-        D2D1_COLOR_F fillColor = (iStateId == TREIS_HOT)              ? MyD2D1Color(96, 144, 144, 144) : 
-                                 (iStateId == TREIS_SELECTED)         ? MyD2D1Color(64, 144, 144, 144) :
-                                 (iStateId == TREIS_SELECTEDNOTFOCUS) ? MyD2D1Color(32, 144, 144, 144) :
+        D2D1_COLOR_F fillColor = (iStateId == TREIS_HOT)              ? MyD2D1Color(96, 160, 24, 42) :
+                                 (iStateId == TREIS_SELECTED)         ? MyD2D1Color(160, 160, 24, 42) :
+                                 (iStateId == TREIS_SELECTEDNOTFOCUS) ? MyD2D1Color(112, 120, 18, 32) :
                                                                         //TREIS_HOTSELECTED
-                                                                        MyD2D1Color(64, 144, 144, 144); 
+                                                                        MyD2D1Color(160, 160, 24, 42);
 
         Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> brush;
         pRenderTarget->CreateSolidColorBrush(fillColor, &brush);
@@ -3648,7 +3648,7 @@ BOOL CThemeCache::CacheTreeViewButton(INT iPartId, INT iStateId, INT stateIndex)
         if (iStateId == TREIS_SELECTED || iStateId == TREIS_SELECTEDNOTFOCUS || iStateId == TREIS_HOTSELECTED)
         {
             FLOAT pillOffsetY = 7, pillWidth = round(3.4f + scale), pillRadius = round(1.4f + scale);
-            brush->SetColor(IsAccentColorPossibleD2D(102, 206, 255, SystemAccentColorLight2));
+            brush->SetColor(MyD2D1Color(237, 36, 56));
             pRenderTarget->FillRoundedRectangle(D2D1::RoundedRect(D2D1::RectF(x, y + pillOffsetY, x + pillWidth, height - pillOffsetY), pillRadius, pillRadius),brush.Get());
         }
     }
@@ -3791,17 +3791,17 @@ BOOL CThemeCache::CacheItemsView(INT iPartId, INT iStateId, INT stateIndex)
         {
             D2D1_ROUNDED_RECT rect = D2D1::RoundedRect(D2D1::RectF(x, y, width, height), cornerRadius, cornerRadius);
             Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> brush;
-            pRenderTarget->CreateSolidColorBrush(IsAccentColorPossibleD2D(0, 96, 188, SystemAccentColorLight2), &brush);
+            pRenderTarget->CreateSolidColorBrush(MyD2D1Color(117, 19, 34), &brush);
             pRenderTarget->FillRoundedRectangle(rect, brush.Get());
 
-            brush->SetColor(IsAccentColorPossibleD2D(0, 120, 215, SystemAccentColorLight2));
+            brush->SetColor(MyD2D1Color(237, 36, 56));
             pRenderTarget->DrawRoundedRectangle(rect, brush.Get(), 2.0f * scale);
         }
         else if (iStateId == 2 || iStateId == 4)
         {
             D2D1_ROUNDED_RECT rect = D2D1::RoundedRect(D2D1::RectF(x, y, width, height), cornerRadius, cornerRadius);
             Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> fillBrush;
-            pRenderTarget->CreateSolidColorBrush(IsAccentColorPossibleD2D(0, 96, 188, SystemAccentColorLight2), &fillBrush);
+            pRenderTarget->CreateSolidColorBrush(MyD2D1Color(117, 19, 34), &fillBrush);
             pRenderTarget->FillRoundedRectangle(rect, fillBrush.Get());
         }
     }
@@ -3819,7 +3819,7 @@ BOOL CThemeCache::CacheItemsView(INT iPartId, INT iStateId, INT stateIndex)
         {
             D2D1_ROUNDED_RECT rect = D2D1::RoundedRect(D2D1::RectF(x-1, y-1, width+1, height+1), cornerRadius, cornerRadius);
             Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> fillBrush;
-            pRenderTarget->CreateSolidColorBrush(MyD2D1Color(128, 144, 144, 144), &fillBrush);
+            pRenderTarget->CreateSolidColorBrush(MyD2D1Color(160, 160, 24, 42), &fillBrush);
             pRenderTarget->FillRoundedRectangle(rect, fillBrush.Get());
         }
     }
@@ -3864,11 +3864,11 @@ BOOL CThemeCache::CacheHeader(INT iStateId, INT stateIndex)
     {
         case HIS_HOT: case HIS_SORTEDHOT:
         case HIS_ICONHOT: case HIS_ICONSORTEDHOT:
-            fillColor = MyD2D1Color(96, 144, 144, 144);
+            fillColor = MyD2D1Color(96, 160, 24, 42);
             break;
         case HIS_PRESSED: case HIS_SORTEDPRESSED:
         case HIS_ICONPRESSED: case HIS_ICONSORTEDPRESSED:
-            fillColor = MyD2D1Color(64, 144, 144, 144);
+            fillColor = MyD2D1Color(160, 160, 24, 42);
             break;
         case HIS_NORMAL: case HIS_SORTEDNORMAL:
         case HIS_ICONNORMAL: case HIS_ICONSORTEDNORMAL:

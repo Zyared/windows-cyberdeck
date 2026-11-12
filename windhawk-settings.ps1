@@ -127,6 +127,19 @@ $explorerVars = @(
   "TabViewItemHeaderForegroundSelected=$Y", "TabViewItemIconForegroundSelected=$Y",
   "TabViewItemHeaderCloseButtonForegroundSelected=$Y", "TabViewItemHeaderForeground=$D"
 )
+# Replace the coloured bitmap command icons with native monochrome glyphs.
+# Labels are scoped to AppBarButton; disabled-state opacity remains controlled by Windows.
+foreach($item in @(@('Вырезать','Cut','E8C6'),@('Копировать','Copy','E8C8'),@('Вставить','Paste','E77F'),@('Переименовать','Rename','E8AC'),@('Поделиться','Share','E72D'),@('Удалить','Delete','E74D'),@('Создать','Create a new item in the current location.','E710'))){
+  $target="Microsoft.UI.Xaml.Controls.AppBarButton[ToolTipService.ToolTip=$($item[0])], Microsoft.UI.Xaml.Controls.AppBarButton[ToolTipService.ToolTip=$($item[1])]"
+  $explorer += ,@($target,@("Icon:=<FontIcon FontFamily=`"Segoe Fluent Icons`" Glyph=`"&#x$($item[2]);`" Foreground=`"$Y`"/>"))
+}
+foreach($item in @(@('SortAndGroupButton','E8CB'),@('DetailsPaneToggleButton','E8A5'))){
+ $explorer += ,@("Microsoft.UI.Xaml.Controls.AppBarButton#$($item[0])",@("Icon:=<FontIcon FontFamily=`"Segoe Fluent Icons`" Glyph=`"&#x$($item[1]);`" Foreground=`"$Y`"/>"))
+}
+$explorer += @(
+ @('Microsoft.UI.Xaml.Controls.Primitives.ToggleButton > Grid > Border', @("Background=$Faint", "BorderBrush=$Hair", 'BorderThickness=1', 'CornerRadius=0')),
+ @('Microsoft.UI.Xaml.Controls.FontIcon', @("Foreground=$Y"))
+)
 
 $startBtn = 'Taskbar.ExperienceToggleButton#LaunchListButton[AutomationProperties.AutomationId=StartButton]'
 $viewBtn = 'Taskbar.ExperienceToggleButton#LaunchListButton[AutomationProperties.AutomationId=TaskViewButton]'
@@ -206,6 +219,22 @@ $notify += @(
  @('Rectangle#HorizontalTrackRect', @('Fill=#391820')),
  @('Thumb#HorizontalThumb > Border > Ellipse#SliderInnerThumb', @('Fill=#ED2438')),
  @('Thumb#HorizontalThumb > Border', @('Background=#ED2438','BorderBrush=#FF5C68'))
+)
+# Explicit resources also cover controls whose template has changed across builds.
+$notifyVars=$startVars + @(
+ 'SystemAccentColor=#ED2438', 'SystemAccentColorLight1=#FF5C68',
+ 'SystemAccentColorLight2=#FF8690', 'SystemAccentColorLight3=#FFD1D6',
+ 'SystemAccentColorDark1=#B41B30', 'SystemAccentColorDark2=#751322',
+ 'SystemAccentColorDark3=#350D16',
+ 'SystemControlHighlightAccentBrush=#ED2438', 'SystemControlHighlightAltAccentBrush=#ED2438',
+ 'SliderTrackValueFill=#ED2438', 'SliderTrackFill=#391820',
+ 'ToggleButtonBackgroundChecked=#ED2438', 'ToggleButtonBackgroundCheckedPointerOver=#FF5C68'
+)
+$notify += @(
+ @('ControlCenter.PaginatedToggleButton > ContentPresenter#ContentPresenter@CommonStates', @('Background@Normal=#211017','Background@PointerOver=#401321','Background@Pressed=#571629','Background@Checked=#ED2438','Background@CheckedPointerOver=#FF5C68','Background@CheckedPressed=#B41B30','Background@CheckedDisabled=#571629','Foreground@Normal=#FFD1D6','Foreground@Checked=#08080A','CornerRadius=0','BorderBrush=#6B1828','BorderThickness=1')),
+ @('Rectangle#HorizontalDecreaseRect', @('Fill=#ED2438')),
+ @('Windows.UI.Xaml.Controls.Primitives.Thumb#HorizontalThumb > Windows.UI.Xaml.Controls.Border > Windows.UI.Xaml.Shapes.Ellipse#SliderInnerThumb', @('Fill=#ED2438')),
+ @('Windows.UI.Xaml.Controls.Primitives.Thumb#HorizontalThumb > Windows.UI.Xaml.Controls.Border', @('Background=#391820','BorderBrush=#ED2438','BorderThickness=1'))
 )
 
 # The Settings app: black page and one neutral colour for every card, so nothing clashes. The home page is React Native, so it has its own card target.
@@ -295,7 +324,7 @@ if ($translucent -and $WithTranslucent) {
   Write-Host "$translucent : explorer only, tint EE08090C"
 }
 if (Test-Path "$root\$($ids[2])") { Write-Mod $ids[2] $taskbar $taskbarVars }
-if (Test-Path "$root\$($ids[5])") { Write-Mod $ids[5] $notify $startVars }
+if (Test-Path "$root\$($ids[5])") { Write-Mod $ids[5] $notify $notifyVars }
 if (Test-Path "$root\$($ids[6])") { Write-Mod $ids[6] $settingsApp @() }
 
 # Folder, open folder and fixed drive icons are read from HKLM. The key did not exist before, so -Off simply removes it.
