@@ -51,8 +51,24 @@ E: has a damaged NTFS directory index in `\ПЕРЕДАЧА_Проект_АНА�
 volume lock. Forced dismount was refused. Online scan queued offline repair;
 the volume still reports Warning / Full Repair Needed. This is **not repaired**,
 and does not establish whether the USB cable or physical disk is healthy.
+The scan also reports 4 KB recorded in bad sectors; this can be historical and
+is not a new surface test. `BootExecute` remains `autocheck autochk *`.
 
 Unique phone backups, original recovery data, installed CyberDeck, live applications
 and boot rollback stay on C/D. No `/x`, offline repair or reboot was performed.
 Local transfer manifest: `%USERPROFILE%\CyberDeck\backup\archive-20261113\manifest.json`.
 The archive README/result records bytes actually moved, not the proposed total.
+
+### Completed transfer
+
+At 01:35 Moscow on 2026-11-13, all 26 selected roots (6,189 files) completed:
+3,555,200,092 bytes from C and 3,990,133,919 bytes from D, total 7,545,334,011.
+Each file passed SHA256 comparison before source removal. Final checks confirmed
+all selected sources absent, destination roots present and both manifest hashes
+equal. `backup\archive-20261113\verification.json` records the final check.
+Free space then: C 18,955,677,696 bytes (17.65 GiB), D 14,176,268,288 (13.20 GiB).
+E still reported Warning / Full Repair Needed. No background transfer remains.
+
+`work\ARCHIVED-RESEARCH.txt` points to the archive. To reproduce the old lab,
+copy the required research directories back to their original paths from the
+manifest before rebuilding. The working project repository stayed on C.
