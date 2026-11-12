@@ -3,7 +3,7 @@ param([Parameter(Mandatory)][string]$OutDir)
 $ErrorActionPreference='Stop'
 Add-Type -AssemblyName System.Drawing
 New-Item -ItemType Directory -Force $OutDir | Out-Null
-$bmp=[Drawing.Bitmap]::new(640,400,[Drawing.Imaging.PixelFormat]::Format24bppRgb)
+$bmp=[Drawing.Bitmap]::new(640,480,[Drawing.Imaging.PixelFormat]::Format24bppRgb)
 $g=[Drawing.Graphics]::FromImage($bmp);$g.Clear([Drawing.Color]::Black);$g.SmoothingMode='AntiAlias';$g.TextRenderingHint='AntiAliasGridFit'
 $red=[Drawing.Color]::FromArgb(237,36,56);$brush=[Drawing.SolidBrush]::new($red);$pen=[Drawing.Pen]::new($red,12)
 $g.DrawLine($pen,320,75,320,232);$g.DrawLine($pen,320,180,235,115);$g.DrawLine($pen,320,180,405,115)
@@ -12,8 +12,15 @@ $fmt=[Drawing.StringFormat]::new();$fmt.Alignment='Center'
 $font=[Drawing.Font]::new('Bahnschrift',62,[Drawing.FontStyle]::Bold,[Drawing.GraphicsUnit]::Pixel)
 $g.DrawString('ARASAKA',$font,$brush,[single]320,[single]250,$fmt)
 $small=[Drawing.Font]::new('Consolas',15,[Drawing.FontStyle]::Regular,[Drawing.GraphicsUnit]::Pixel)
-$g.DrawString('SECURE YOUR FUTURE.',$small,$brush,[single]320,[single]336,$fmt)
-$g.DrawLine([Drawing.Pen]::new($red,2),160,375,480,375)
+$g.DrawString('CORPORATE SYSTEMS // BOOT SEQUENCE',$small,$brush,[single]320,[single]336,$fmt)
+# Decorative static loader motif, not a live progress or status measurement.
+$dim=[Drawing.SolidBrush]::new([Drawing.Color]::FromArgb(70,12,22))
+for($i=0;$i -lt 16;$i++){
+ $fill=if($i -in 6,7,8,9){$brush}else{$dim}
+ $g.FillRectangle($fill,(160+$i*20),385,14,8)
+}
+$g.DrawString('ARASAKA  //  INITIALIZING',$small,$brush,[single]320,[single]416,$fmt)
+$dim.Dispose()
 $g.Dispose();$bmp.Save((Join-Path $OutDir 'splash.bmp'),[Drawing.Imaging.ImageFormat]::Bmp)
 $bmp.Save((Join-Path $OutDir 'boot-preview.png'),[Drawing.Imaging.ImageFormat]::Png)
 $bmp.Dispose();$pen.Dispose();$brush.Dispose();$font.Dispose();$small.Dispose();$fmt.Dispose()

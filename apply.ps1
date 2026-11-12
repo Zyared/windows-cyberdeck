@@ -35,6 +35,10 @@ $bat = '@echo off' + "`r`n" + 'powershell -NoProfile -ExecutionPolicy Bypass -Fi
 
 # 3. Artwork.
 & (Join-Path $src 'make-art.ps1') -OutDir $Home2
+foreach($file in 'make-arasaka-cursors.ps1','apply-arasaka-cursors.ps1'){
+  if($src -ne $Home2){Copy-Item (Join-Path $src $file) $Home2 -Force}
+}
+& (Join-Path $src 'make-arasaka-cursors.ps1') -OutDir (Join-Path $Home2 'cursors-v2')
 $wall = Join-Path $Home2 'wallpaper.png'
 
 # 4. Colours. Registry colours are stored as ABGR.
@@ -59,12 +63,8 @@ Set-ItemProperty $d ColorizationAfterglow ([BitConverter]::ToInt32([byte[]]@(56,
 Set-ItemProperty $d ColorPrevalence 1 -Type DWord   # red title bars and window borders
 Set-ItemProperty $d EnableWindowColorization 1 -Type DWord
 
-# 5. Cursors: only three roles change, the rest keep the Windows defaults.
-$c = 'HKCU:\Control Panel\Cursors'
-Set-ItemProperty $c '(default)' 'CyberDeck'
-Set-ItemProperty $c Arrow (Join-Path $Home2 'arrow.cur')
-Set-ItemProperty $c Hand (Join-Path $Home2 'link.cur')
-Set-ItemProperty $c IBeam (Join-Path $Home2 'beam.cur')
+# 5. Complete Arasaka cursor pack, including real animated busy cursors.
+& (Join-Path $src 'apply-arasaka-cursors.ps1')
 
 # 6. Wallpaper (Fill) and lock screen.
 Set-ItemProperty 'HKCU:\Control Panel\Desktop' WallpaperStyle '10'
