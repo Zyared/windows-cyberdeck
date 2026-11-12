@@ -35,6 +35,7 @@ $items = @(
 )
 # Additional shell surfaces, both namespace views, physical and network drives.
 $more=@{
+ '{018D5C66-4533-4307-9B53-224DE2ED1FE6}'='network'
  '{645FF040-5081-101B-9F08-00AA002F954E}'='recycle'
  '{26EE0668-A00A-44D7-9371-BEB064C98683}'='settings'
  '{21EC2020-3AEA-1069-A2DD-08002B30309D}'='settings'
