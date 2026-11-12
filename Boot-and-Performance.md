@@ -69,3 +69,6 @@ Restore-Boot-Mode.cmd на рабочем столе вызывает -Mode Rest
 Это прямой следующий запуск Windows Boot Manager, а не открытие экрана настроек BIOS. Следующий после него обычный запуск снова следует постоянному порядку Arasaka. FACEIT после перезагрузки не тестировался; обход собственного EFI-загрузчика не отменяет другие требования античита.
 
 Источники: https://uefi.org/sites/default/files/resources/UEFI-Plugfest-WindowsBootEnvironment.pdf (BootNext/bootsequence) и https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/shutdown .
+## Установленный эксперимент boot-анимации — 13.11.2026
+
+Настоящие кадры индикатора Arasaka прошли загрузку WinRE с Secure Boot и точным host winload. Установлена отдельная запись и собственные ресурсы; обычный порядок UEFI сохранён. Полный цикл установки/удаления/повторной установки и оба BootNext-переключателя прошли без перезагрузки. Физическая загрузка и FACEIT ещё не проверены. Начать с **Boot-Animation-Test.md** и Test-Arasaka-Animation.cmd на рабочем столе; восстановление — Restore-Arasaka-Animation.cmd. Первый запуск требует доверия к хешу через MOK, затем повторного одноразового теста. Подробные проверки и ограничения — в Boot-Animation-Research.md, раздел от 13.11.2026. Не применять старый общий Restore-Windows-Boot для удаления только этого эксперимента.

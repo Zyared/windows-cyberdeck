@@ -7,3 +7,4 @@ live/data.js
 backup/
 *.log
 test-output/
+__pycache__/
