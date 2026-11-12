@@ -4,6 +4,14 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'detect.ps1')
 if (-not (Test-Path (Join-Path $BackupDir 'complete.txt'))) { throw "No backup found in $BackupDir" }
 
+if (Test-Path (Join-Path $PSScriptRoot 'Undo-Theme-Persistence.ps1')) {
+  & (Join-Path $PSScriptRoot 'Undo-Theme-Persistence.ps1')
+}
+if (Test-Path (Join-Path $BackupDir 'cursors-v2.json')) {
+  & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'apply-arasaka-cursors.ps1') -Undo
+  if ($LASTEXITCODE -ne 0) { throw 'Cursor rollback failed' }
+}
+
 & (Join-Path $PSScriptRoot 'install-session.ps1') -Undo
 
 # Animated layer first, otherwise the live wallpaper would keep covering the restored picture.

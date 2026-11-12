@@ -2,6 +2,7 @@ param([switch]$Undo)
 $ErrorActionPreference='Stop'
 $root=Join-Path $env:USERPROFILE 'CyberDeck'
 $backup=Join-Path $root 'backup\cursors-v2.json'
+$persistenceBackup=Join-Path $root 'backup\cursor-persistence.json'
 New-Item -ItemType Directory -Force (Split-Path $backup) | Out-Null
 $key=[Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Control Panel\Cursors',$true)
 $roles='Arrow','Help','AppStarting','Wait','Crosshair','IBeam','NWPen','No','SizeNS','SizeWE','SizeNWSE','SizeNESW','SizeAll','UpArrow','Hand','Pin','Person'
@@ -19,6 +20,12 @@ try {
   foreach($v in (Get-Content $backup -Raw | ConvertFrom-Json)){
    if($v.Exists){$key.SetValue($v.Name,$v.Value,[Microsoft.Win32.RegistryValueKind]::$($v.Kind))}else{$key.DeleteValue($v.Name,$false)}
   }
+  if(Test-Path $persistenceBackup){
+   foreach($v in (Get-Content $persistenceBackup -Raw | ConvertFrom-Json)){
+    $k=[Microsoft.Win32.Registry]::CurrentUser.CreateSubKey($v.Key)
+    try{if($v.Exists){$k.SetValue($v.Name,$v.Value,[Microsoft.Win32.RegistryValueKind]::$($v.Kind))}else{$k.DeleteValue($v.Name,$false)}}finally{$k.Dispose()}
+   }
+  }
  }else{
   # Validate all 17 files through the Windows cursor loader before changing any setting.
   $paths=@{}
@@ -35,6 +42,20 @@ try {
    $saved | ConvertTo-Json | Set-Content $backup -Encoding UTF8
   }
   foreach($role in $roles){$key.SetValue($role,$paths[$role],'ExpandString')}
+  $changes=@(
+   @{Key='Control Panel\Cursors';Name='';Value='Arasaka';Kind='String'},
+   @{Key='Control Panel\Cursors';Name='Scheme Source';Value=1;Kind='DWord'},
+   @{Key='Control Panel\Cursors\Schemes';Name='Arasaka';Value=(($roles | ForEach-Object {$paths[$_]}) -join ',');Kind='String'},
+   @{Key='Software\Microsoft\Windows\CurrentVersion\Themes';Name='ThemeChangesMousePointers';Value=0;Kind='DWord'}
+  )
+  if(!(Test-Path $persistenceBackup)){
+   $saved=@(foreach($change in $changes){
+    $k=[Microsoft.Win32.Registry]::CurrentUser.CreateSubKey($change.Key)
+    try{$exists=$k.GetValueNames() -contains $change.Name;[pscustomobject]@{Key=$change.Key;Name=$change.Name;Exists=$exists;Value=$k.GetValue($change.Name,$null,'DoNotExpandEnvironmentNames');Kind=$(if($exists){$k.GetValueKind($change.Name).ToString()}else{$change.Kind})}}finally{$k.Dispose()}
+   })
+   ConvertTo-Json -InputObject $saved | Set-Content $persistenceBackup -Encoding UTF8
+  }
+  foreach($change in $changes){$k=[Microsoft.Win32.Registry]::CurrentUser.CreateSubKey($change.Key);try{$k.SetValue($change.Name,$change.Value,[Microsoft.Win32.RegistryValueKind]::$($change.Kind))}finally{$k.Dispose()}}
  }
  if(![ArasakaCursorNative]::SystemParametersInfo(0x57,0,[IntPtr]::Zero,2)){throw 'Cursor refresh failed'}
 }finally{$key.Dispose()}
