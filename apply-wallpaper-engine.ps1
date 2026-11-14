@@ -29,7 +29,7 @@ if (-not (Test-Path $bak)) { Copy-Item $cfg $bak -Force; Write-Host 'Wallpaper E
 $project = Join-Path $we 'projects\myprojects\cyberdeck'
 New-Item -ItemType Directory -Force -Path $project | Out-Null
 foreach ($f in 'index.html', 'base.png', 'data.js', 'thumbnail.jpg') { Copy-Item (Join-Path $root "live\$f") $project -Force }
-$manifest = [ordered]@{ file = 'index.html'; preview = 'thumbnail.jpg'; title = 'ARASAKA / Corporate Terminal'; type = 'web'; visibility = 'private' }
+$manifest = [ordered]@{ file = 'index.html'; preview = 'thumbnail.jpg'; title = 'ARASAKA / Corporate Terminal'; type = 'web'; visibility = 'private'; general = @{ supportsaudioprocessing = $true; properties = @{} } }
 [IO.File]::WriteAllText((Join-Path $project 'project.json'), ($manifest | ConvertTo-Json), (New-Object Text.UTF8Encoding $false))
 
 if (-not (Get-Process wallpaper64, wallpaper32 -ErrorAction SilentlyContinue)) { Start-Process $exe; Start-Sleep 8 }

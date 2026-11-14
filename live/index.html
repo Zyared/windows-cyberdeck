@@ -2,12 +2,86 @@
 <html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ARASAKA / Corporate terminal</title>
 <style>
 :root{--red:#ed2438;--muted:#92929c;--white:#dbdbe0}*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;padding:0;}body{margin:0;background:#08090c;color:var(--white);font-family:Bahnschrift,'Segoe UI',sans-serif;overflow:hidden}#screen{position:fixed;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;background:radial-gradient(ellipse at 66% 45%,#260d16 0,transparent 47%),linear-gradient(90deg,#08090c 15%,#0d0d13);border-top:6px solid var(--red)}#screen:after{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 3px,#0002 3px 4px);opacity:.4}.grid{position:absolute;inset:0;background-image:linear-gradient(#b42a3910 1px,transparent 1px),linear-gradient(90deg,#b42a3910 1px,transparent 1px);background-size:60px 60px;mask-image:linear-gradient(90deg,transparent,#000)}header{position:absolute;top:76px;left:70px;right:70px;border-bottom:1px solid #ed24384a;padding:0 0 24px;display:flex;justify-content:space-between;align-items:center}.kicker{font-size:22px;letter-spacing:4px;color:var(--red)}.sub{font:15px Consolas,monospace;color:var(--muted);letter-spacing:2px;margin-top:12px}.jp{font-size:66px;font-weight:800;color:var(--red)}.rail{position:absolute;left:70px;top:235px;width:300px;height:680px;border-left:3px solid var(--red);padding:0 26px}.tag{font:14px Consolas,monospace;color:var(--red);letter-spacing:2px}h2{font-size:38px;line-height:1.05;font-weight:400;margin:22px 0 38px}.row{border-top:1px solid #ed243833;padding:19px 0;font:14px Consolas,monospace;color:var(--muted)}.row b{color:var(--red);margin-right:14px}.restricted{margin-top:35px;background:#ed243812;border:1px solid #ed24384a;clip-path:polygon(0 0,100% 0,100% 80%,93% 100%,0 100%);padding:20px 14px;color:var(--red);font-size:27px}.restricted small{display:block;color:var(--muted);font:11px Consolas;margin-top:10px}.clock{font-size:47px;letter-spacing:2px;margin-top:32px}.date{font:13px Consolas;color:var(--muted);letter-spacing:2px;margin-top:8px}.hero{position:absolute;left:520px;top:242px;width:1160px;text-align:center}.crest{width:360px;height:320px;filter:drop-shadow(0 0 26px #ed243835)}h1{color:var(--red);font-size:124px;letter-spacing:12px;margin:13px 0 0;font-weight:700;line-height:1.15}.slogan{font-size:22px;letter-spacing:8px;margin-top:22px}.divider{height:2px;background:linear-gradient(90deg,transparent,#ed2438,transparent);margin:34px 70px 18px}.designation{font:13px Consolas;color:var(--muted);letter-spacing:3px}.side{position:absolute;right:62px;top:300px;writing-mode:vertical-rl;color:#ed24387a;font:13px Consolas;letter-spacing:4px}.status{position:absolute;left:570px;right:250px;bottom:175px;border-top:1px solid #ed243850;border-bottom:1px solid #ed243850;padding:19px 0;display:flex;justify-content:space-between;font:13px Consolas;letter-spacing:1px}.status span:first-child{color:var(--red)}.pulse{display:inline-block;width:7px;height:7px;background:var(--red);box-shadow:0 0 10px #ed2438;animation:pulse 3s ease-in-out infinite;margin-right:9px}.footer{position:absolute;bottom:50px;left:70px;right:70px;display:flex;justify-content:space-between;border-top:1px solid #ed243850;padding-top:20px;font:12px Consolas;color:var(--muted);letter-spacing:1px}.barcode{height:25px;width:145px;background:repeating-linear-gradient(90deg,var(--red) 0 2px,transparent 2px 5px,var(--red) 5px 6px,transparent 6px 10px)}.sweep{position:absolute;left:390px;right:0;height:2px;top:190px;background:linear-gradient(90deg,transparent,#ed243825,transparent);animation:sweep 15s linear infinite}.corner{position:absolute;right:70px;bottom:120px;width:36px;height:36px;border-right:3px solid var(--red);border-bottom:3px solid var(--red)}@keyframes pulse{50%{opacity:.35}}@keyframes sweep{to{transform:translateY(720px)}}@media(prefers-reduced-motion:reduce){*{animation:none!important}}.paused *{animation-play-state:paused!important}
+.hero{top:218px}.crest{width:338px;height:300px;transform-origin:center;will-change:transform}h1{font-size:112px}.status{bottom:225px}.audio-panel{position:absolute;left:570px;right:250px;bottom:126px;height:94px}.audio-heading{display:flex;justify-content:space-between;color:#ad6871;font:11px Consolas,monospace;letter-spacing:2px}.audio-heading span:first-child{color:var(--red)}#spectrum{display:block;width:100%;height:72px;margin-top:9px}.audio-halo{position:absolute;left:870px;top:144px;width:460px;height:460px;border:1px solid #ed243828;border-radius:50%;pointer-events:none;opacity:.3;will-change:transform,opacity}.audio-halo:after{content:'';position:absolute;inset:18px;border:1px dashed #ed243836;border-radius:50%}
 </style>
 <div id="screen"><div class="grid"></div><div class="sweep"></div>
+<div class="audio-halo" aria-hidden="true"></div>
+<div class="audio-panel"><div class="audio-heading"><span>ARASAKA / SONIC ARRAY</span><span id="audio-status">AUDIO LINK / STANDBY</span></div><canvas id="spectrum" width="1100" height="72" aria-label="System audio spectrum"></canvas></div>
 <header><div><div class="kicker">ARASAKA CORPORATION</div><div class="sub">NIGHT CITY / NORTH AMERICAN DIVISION</div></div><div class="jp">荒坂</div></header>
 <aside class="rail"><div class="tag">PERSONNEL SYSTEM / 01</div><h2>CORPORATE<br>ACCESS<br>TERMINAL</h2><div class="row"><b>01</b> PERSONNEL INTERFACE</div><div class="row"><b>02</b> NIGHT CITY NETWORK</div><div class="row"><b>03</b> COUNTERINTELLIGENCE</div><div class="restricted">RESTRICTED<small>AUTHORIZED PERSONNEL ONLY</small></div><div class="clock" id="clock">00:00:00</div><div class="date" id="date"></div></aside>
 <main class="hero"><svg class="crest" viewBox="0 0 360 320" aria-label="Arasaka emblem"><g stroke="#ed2438" stroke-width="21" fill="none"><path d="M180 65V290M180 205L60 110M180 205L300 110"/></g><g fill="#ed2438"><circle cx="180" cy="50" r="43"/><circle cx="60" cy="100" r="43"/><circle cx="300" cy="100" r="43"/></g></svg><h1>ARASAKA</h1><div class="slogan">SECURE YOUR FUTURE.</div><div class="divider"></div><div class="designation">サイバーセキュリティ / CORPORATE SECURITY</div></main>
 <div class="side">ARASAKA SYSTEMS • CYBERPUNK 2077 • NC-01</div><div class="status"><span><i class="pulse"></i>TERMINAL ONLINE</span><span>PERSONNEL SESSION</span><span>NC // 2077</span></div><div class="corner"></div><footer class="footer"><div>PROPERTY OF ARASAKA CORPORATION<br><br>UNAUTHORIZED ACCESS IS PROHIBITED</div><div class="barcode"></div><div>CYBERPUNK 2077<br><br>PERSONAL DESKTOP / FAN THEME</div></footer></div>
 <script>
 const stage=document.querySelector('#screen');function fit(){stage.style.left='0px';stage.style.top='0px';stage.style.transform=`scale(${document.documentElement.clientWidth/1920},${document.documentElement.clientHeight/1080})`}fit();addEventListener('resize',fit);function tick(){let d=new Date();document.querySelector('#clock').textContent=d.toLocaleTimeString('en-GB');document.querySelector('#date').textContent=d.toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'}).toUpperCase()}tick();setInterval(tick,1000);window.wallpaperPropertyListener={setPaused(p){document.body.classList.toggle('paused',p)}};
+</script>
+<script>
+(() => {
+  'use strict';
+  const canvas = document.querySelector('#spectrum');
+  const ctx = canvas.getContext('2d');
+  const crest = document.querySelector('.crest');
+  const halo = document.querySelector('.audio-halo');
+  const label = document.querySelector('#audio-status');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const target = new Float32Array(64), smooth = new Float32Array(64);
+  const state = window.arasakaAudioState = {callbacks:0, peak:0, bass:0, paused:false};
+  let lastAudio = -Infinity, previous = 0, frame = 0, bass = 0, bassTarget = 0;
+  let lastLabel = '';
+  const clamp = value => Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 0;
+  function receive(samples) {
+    if (!samples || samples.length !== 128) return;
+    lastAudio = performance.now();
+    state.callbacks++;
+    let low = 0, peak = 0;
+    for (let i = 0; i < 64; i++) {
+      const value = (clamp(samples[i]) + clamp(samples[i + 64])) * .5;
+      target[i] = value < .001 ? 0 : Math.min(1, Math.pow(value, .58) * 1.55);
+      peak = Math.max(peak, value);
+      if (i < 8) low += value;
+    }
+    bassTarget = Math.min(1, Math.pow(low / 8, .65) * 1.8);
+    state.peak = peak;
+  }
+  function draw(now) {
+    if (state.paused) return;
+    frame = requestAnimationFrame(draw);
+    if (now - previous < 1000 / 30) return;
+    const dt = Math.min(100, now - previous || 33); previous = now;
+    if (now - lastAudio > 750) { target.fill(0); bassTarget = 0; state.peak = 0; }
+    bass += (bassTarget - bass) * (1 - Math.exp(-dt / (bassTarget > bass ? 65 : 260)));
+    state.bass = bass;
+    ctx.clearRect(0, 0, 1100, 72);
+    ctx.fillStyle = '#ed243826'; ctx.fillRect(0, 69, 1100, 1);
+    // Stereo is combined by frequency. Bass sits at the centre, treble at the edges.
+    for (let i = 0; i < 64; i++) {
+      smooth[i] += (target[i] - smooth[i]) * (1 - Math.exp(-dt / (target[i] > smooth[i] ? 55 : 220)));
+    }
+    for (let bar = 0; bar < 64; bar++) {
+      const bin = (bar < 32 ? 31 - bar : bar - 32) * 2;
+      const level = (smooth[bin] + smooth[bin + 1]) * .5;
+      const height = Math.max(2, level * 65), x = bar * (1100 / 64);
+      ctx.fillStyle = `rgba(237,36,56,${.24 + .76 * level})`;
+      ctx.fillRect(x, 69 - height, 12, height);
+      if (height > 5) { ctx.fillStyle = '#ff8893'; ctx.fillRect(x, 69 - height, 12, 2); }
+    }
+    const motion = reduced.matches ? 0 : bass;
+    crest.style.transform = `scale(${1 + motion * .045})`;
+    crest.style.filter = `drop-shadow(0 0 ${20 + bass * 38}px rgba(237,36,56,${.2 + bass * .5}))`;
+    halo.style.transform = `scale(${1 + motion * .08})`;
+    halo.style.opacity = String(.2 + bass * .65);
+    const text = state.peak > .003 ? 'AUDIO LINK / LIVE' : 'AUDIO LINK / STANDBY';
+    if (text !== lastLabel) { label.textContent = text; lastLabel = text; }
+  }
+  window.wallpaperPropertyListener = {
+    setPaused(paused) {
+      state.paused = !!paused;
+      document.body.classList.toggle('paused', state.paused);
+      cancelAnimationFrame(frame);
+      if (!state.paused) { previous = performance.now(); frame = requestAnimationFrame(draw); }
+    }
+  };
+  // Wallpaper Engine supplies system playback levels; no microphone or Web Audio capture.
+  if (typeof window.wallpaperRegisterAudioListener === 'function') window.wallpaperRegisterAudioListener(receive);
+  frame = requestAnimationFrame(draw);
+})();
 </script></html>
