@@ -35,11 +35,11 @@ const stage=document.querySelector('#screen');function fit(){stage.style.left='0
     let low = 0, peak = 0;
     for (let i = 0; i < 64; i++) {
       const value = (clamp(samples[i]) + clamp(samples[i + 64])) * .5;
-      target[i] = value < .001 ? 0 : Math.min(1, Math.pow(value, .58) * 1.55);
+      target[i] = value < .001 ? 0 : Math.min(1, Math.pow(value, .58) * 1.15);
       peak = Math.max(peak, value);
       if (i < 8) low += value;
     }
-    bassTarget = Math.min(1, Math.pow(low / 8, .65) * 1.8);
+    bassTarget = Math.min(1, Math.pow(low / 8, .65) * 1.35);
     state.peak = peak;
   }
   function draw(now) {

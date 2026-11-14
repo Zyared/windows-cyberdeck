@@ -27,4 +27,6 @@ to undo just this visual change. The repository preserves the new version.
 Validation: JavaScript syntax, installer PowerShell syntax, synthetic bass/silence,
 invalid samples, missing-feed timeout and pause/resume passed. A 1920x1080 headless
 render verified layout. These checks do not establish actual system-audio delivery;
-live music response requires the running Wallpaper Engine/user check.
+The user then confirmed that the bars move with currently playing music, and
+requested lower sensitivity. Spectrum gain was reduced from 1.55 to 1.15 and
+bass gain from 1.8 to 1.35 (about 25% less before saturation), then reloaded.
