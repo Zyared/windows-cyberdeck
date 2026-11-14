@@ -1,8 +1,8 @@
 # Arasaka audio-reactive wallpaper
 
 The existing corporate terminal now has a red 64-bar mirrored spectrum below
-the emblem. Low frequencies gently scale the emblem (up to 4.5%) and its halo
-(up to 8%) and brighten the red glow. The logo and typography remain recognisable.
+the emblem. Low frequencies gently scale the emblem (up to 7%) and its halo
+(up to 12%) and brighten the red glow. The logo and typography remain recognisable.
 
 `live/index.html` registers Wallpaper Engine's system-playback audio listener.
 The installer writes `general.supportsaudioprocessing=true` in `project.json`.
@@ -30,3 +30,7 @@ render verified layout. These checks do not establish actual system-audio delive
 The user then confirmed that the bars move with currently playing music, and
 requested lower sensitivity. Spectrum gain was reduced from 1.55 to 1.15 and
 bass gain from 1.8 to 1.35 (about 25% less before saturation), then reloaded.
+
+A second user adjustment increased motion amplitude while retaining reduced gain:
+bar travel 65 → 89 design pixels, emblem scale 4.5% → 7%, halo 8% → 12%.
+The hero and status row were moved slightly upward to keep the taller spectrum clear.
